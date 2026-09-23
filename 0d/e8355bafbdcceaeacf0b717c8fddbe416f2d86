@@ -1,0 +1,19 @@
+eval/dataset.jsonl
+  s_dd4e70d7c13479::t_271c1618c629e4 1-265
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0de8355bafbdcceaeacf0b717c8fddbe416f2d86",
+  "prompts": {},
+  "sessions": {
+    "s_dd4e70d7c13479": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0cb7a-1370-753d-8359-7ebbd796a4c2",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
