@@ -1,0 +1,31 @@
+scripts/run_eval.py
+  s_dd4e70d7c13479::t_9c48a4871ff391 47,49-57
+  s_dd4e70d7c13479::t_09b1aa2d3fec96 11-17,19-22,24-28,30-36,38-40,42,44-46,48,58,69-70,73,78-82,98,100-103,105,110-113,116-117,128-132
+  s_dd4e70d7c13479::t_538bb28cc88193 1-10,18,23,29,37,41,43,59-68,71-72,74-77,83-97,99,104,106-109,114-115,118-127
+scripts/checkpoint_compare.py
+  s_dd4e70d7c13479::t_11c7e76f30acfc 1-58
+scripts/template_experiment.py
+  s_dd4e70d7c13479::t_34adb237b942b8 1-79,81-95
+  s_dd4e70d7c13479::t_0ab381dd3389e3 80
+scripts/mine_sessions.py
+  s_dd4e70d7c13479::t_a7bd37d236a91f 1-70,72-129,131-151
+  s_dd4e70d7c13479::t_b097974c15ef49 71,130
+scripts/scan_skills.py
+  s_dd4e70d7c13479::t_caf304edf3590e 1-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a69ecc51bb5199f4c3c24c005713dcf5c0ce62b6",
+  "prompts": {},
+  "sessions": {
+    "s_dd4e70d7c13479": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0cb7a-1370-753d-8359-7ebbd796a4c2",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
