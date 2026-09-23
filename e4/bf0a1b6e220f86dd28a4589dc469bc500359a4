@@ -1,0 +1,24 @@
+.markdownlint.json
+  s_dd4e70d7c13479::t_c46ab11aefd35e 1-4
+.gitignore
+  s_dd4e70d7c13479::t_f350d8222639a8 1-5
+  s_dd4e70d7c13479::t_b2b75ff145a437 6-7
+pyproject.toml
+  s_dd4e70d7c13479::t_4f208610a56a2b 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e4bf0a1b6e220f86dd28a4589dc469bc500359a4",
+  "prompts": {},
+  "sessions": {
+    "s_dd4e70d7c13479": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0cb7a-1370-753d-8359-7ebbd796a4c2",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
