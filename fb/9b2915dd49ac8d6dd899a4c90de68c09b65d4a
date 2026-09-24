@@ -1,0 +1,22 @@
+finetune/router_q.py
+  s_899e005a730b4c::t_7df5318d9a2152 1-8,13-15,24,43,49,51,53-58
+  s_899e005a730b4c::t_543913eb548a55 9-12,16-23,25-42,44-48,50,52
+.gitignore
+  s_899e005a730b4c::t_5d6f03e12d80c4 8-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fb9b2915dd49ac8d6dd899a4c90de68c09b65d4a",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
