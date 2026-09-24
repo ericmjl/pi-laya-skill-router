@@ -1,0 +1,23 @@
+finetune/trainer.py
+  s_899e005a730b4c::t_1e08e6c6b058fc 52,235-238
+  s_899e005a730b4c::t_87fc1b11294ac7 196-199
+  s_899e005a730b4c::t_bf6c15fce2567b 140,144-146
+finetune/session_data.py
+  s_899e005a730b4c::t_4788dad0965880 283
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "50e36297e01691a074e12b6e03492a9649aaecd1",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
