@@ -1,0 +1,22 @@
+finetune/README.md
+  s_899e005a730b4c::t_ecbda5e8f4821d 120
+  s_899e005a730b4c::t_e9525e5e27fa62 97-115
+launchd/com.ericmjl.laya-sidecar.plist
+  s_899e005a730b4c::t_cf191308799b00 28-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e997f64347369516df7fffe8b76186d46120045a",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
