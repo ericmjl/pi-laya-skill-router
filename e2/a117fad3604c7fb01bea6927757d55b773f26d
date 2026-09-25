@@ -1,0 +1,23 @@
+finetune/distilled/2026-09-24T11-00-36-956Z_01a0d313-0fdb-737d-bd55-f0c9b3d37af8.json
+  s_899e005a730b4c::t_fcd48cf48d3218 1-23
+finetune/distilled/2026-09-24T12-00-54-796Z_01a0d34a-4407-7062-99db-c8e0e2cd8501.json
+  s_899e005a730b4c::t_f3b4ed35109895 1-20
+finetune/distilled/2026-09-24T23-51-50-042Z_01a0d5d5-2219-75db-a7c5-49eed8208331.json
+  s_899e005a730b4c::t_5163f133e89135 1-109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e2a117fad3604c7fb01bea6927757d55b773f26d",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
