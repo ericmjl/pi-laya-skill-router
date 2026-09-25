@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.ericmjl.laya-nightly</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>__UV__</string>
+        <string>run</string>
+        <string>python</string>
+        <string>finetune/nightly_loop.py</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>__HOME__/github/pi-laya-skill-router</string>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/tmp/laya-nightly.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/laya-nightly.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>USE_TF</key>
+        <string>0</string>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+    </dict>
+</dict>
+</plist>

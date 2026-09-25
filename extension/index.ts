@@ -1,0 +1,289 @@
+/**
+ * laya-skill-router: pre-loads relevant skills into pi's context using a
+ * locally-served convaiinnovations/laya System-1 decision model.
+ *
+ * Every turn, before the agent loop starts, all known skills are scored by
+ * the laya sidecar (http://127.0.0.1:8787). The top-k "core" skills are
+ * injected as a visible custom message containing their verbatim SKILL.md
+ * bodies, so the main model never has to self-trigger the read.
+ *
+ * Install: add this file's path to settings.json "extensions".
+ * Sidecar: uv run sidecar/server.py  (see README.md)
+ */
+
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { readFileSync, appendFileSync, mkdirSync, readdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { join, basename, dirname } from "node:path";
+
+const ROUTE_URL = process.env.LAYA_ROUTER_URL ?? "http://127.0.0.1:8787/route";
+const MODE = (process.env.LAYA_ROUTER_MODE ?? "observe") as "observe" | "inject";
+const THRESHOLD = Number(process.env.LAYA_ROUTER_THRESHOLD ?? "0.3");
+const TOP_K = Number(process.env.LAYA_ROUTER_TOP_K ?? "3");
+const MAX_SKILL_CHARS = Number(process.env.LAYA_ROUTER_MAX_SKILL_CHARS ?? "8000");
+const FETCH_TIMEOUT_MS = Number(process.env.LAYA_ROUTER_TIMEOUT_MS ?? "3500");
+const LOG_DIR = join(homedir(), ".pi", "agent", "laya-router");
+const LOG_FILE = join(LOG_DIR, "log.jsonl");
+
+const GLOBAL_SKILL_DIRS = [
+  join(homedir(), ".agents", "skills"),
+  join(homedir(), ".pi", "agent", "skills"),
+];
+
+interface RoutedSkill {
+  name: string;
+  description: string;
+  path: string;
+}
+
+interface RouteResponse {
+  picks: { name: string; p: number }[];
+  all: { name: string; p: number }[];
+  latency_ms: number;
+}
+
+function log(entry: Record<string, unknown>): void {
+  try {
+    mkdirSync(LOG_DIR, { recursive: true });
+    appendFileSync(LOG_FILE, JSON.stringify({ ts: new Date().toISOString(), ...entry }) + "\n");
+  } catch {
+    /* logging must never break a turn */
+  }
+}
+
+function parseFrontmatterSkill(skillMdPath: string): RoutedSkill | null {
+  try {
+    const text = readFileSync(skillMdPath, "utf8");
+    if (!text.startsWith("---")) return null;
+    const end = text.indexOf("---", 3);
+    if (end === -1) return null;
+    const fm = text.slice(3, end);
+    const nameMatch = fm.match(/^name:\s*(.+)$/m);
+    const descMatch = fm.match(/^description:\s*(.+)$/m);
+    return {
+      name: (nameMatch?.[1] ?? basename(dirname(skillMdPath))).trim(),
+      description: (descMatch?.[1] ?? "").trim().slice(0, 300),
+      path: skillMdPath,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function scanSkillDirs(cwd: string): RoutedSkill[] {
+  const dirs = [...GLOBAL_SKILL_DIRS, join(cwd, ".agents", "skills"), join(cwd, ".claude", "skills")];
+  const seen = new Set<string>();
+  const skills: RoutedSkill[] = [];
+  for (const dir of dirs) {
+    let names: string[] = [];
+    try {
+      names = readdirSync(dir);
+    } catch {
+      continue;
+    }
+    for (const entry of names) {
+      const skillMd = join(dir, entry, "SKILL.md");
+      const parsed = parseFrontmatterSkill(skillMd);
+      if (parsed && !seen.has(parsed.name)) {
+        seen.add(parsed.name);
+        skills.push(parsed);
+      }
+    }
+  }
+  return skills;
+}
+
+/** Normalize pi's own skill list (shape may vary); fall back to dir scan. */
+function normalizeSkills(raw: unknown, cwd: string): { skills: RoutedSkill[]; source: string } {
+  if (Array.isArray(raw) && raw.length > 0) {
+    const skills: RoutedSkill[] = [];
+    for (const item of raw) {
+      if (!item || typeof item !== "object") continue;
+      const rec = item as Record<string, unknown>;
+      const path = String(rec.path ?? rec.filePath ?? rec.file ?? "");
+      const name = String(rec.name ?? rec.skill ?? (path ? basename(dirname(path)) : ""));
+      if (!name) continue;
+      skills.push({
+        name,
+        description: String(rec.description ?? "").slice(0, 300),
+        path: path || join("(unknown)", name, "SKILL.md"),
+      });
+    }
+    if (skills.length > 0) return { skills, source: "systemPromptOptions" };
+  }
+  return { skills: scanSkillDirs(cwd), source: "dir-scan" };
+}
+
+function stripFrontmatter(text: string): string {
+  if (!text.startsWith("---")) return text;
+  const end = text.indexOf("---", 3);
+  return end === -1 ? text : text.slice(end + 3).replace(/^\s+/, "");
+}
+
+export default function layaSkillRouter(pi: ExtensionAPI) {
+  const injectedThisSession = new Set<string>();
+  let sessionEnabled: boolean | null = null; // null = not yet health-checked
+  let lastPrompt = "";
+
+  pi.on("session_start", async (_event, ctx) => {
+    injectedThisSession.clear();
+    sessionEnabled = null;
+    try {
+      const res = await fetch(ROUTE_URL.replace(/\/route$/, "/health"), { signal: AbortSignal.timeout(400) });
+      sessionEnabled = res.ok;
+    } catch {
+      sessionEnabled = false;
+    }
+    if (!sessionEnabled) {
+      ctx.ui.setStatus("laya-router", "sidecar down (start: uv run sidecar/server.py)");
+    }
+  });
+
+  pi.on("session_compact", async () => {
+    // compacted transcripts may drop earlier injections; allow re-injection
+    injectedThisSession.clear();
+  });
+
+  pi.on("before_agent_start", async (event, ctx) => {
+    if (sessionEnabled === false) return;
+    const prompt = event.prompt ?? "";
+    if (!prompt.trim() || prompt.trimStart().startsWith("/")) {
+      lastPrompt = prompt || lastPrompt;
+      return;
+    }
+
+    const opts = (event as unknown as { systemPromptOptions?: { skills?: unknown } }).systemPromptOptions;
+    const { skills, source } = normalizeSkills(opts?.skills, ctx.cwd);
+    if (skills.length === 0) return;
+
+    // short continuations carry no signal on their own; include the prior turn
+    const state =
+      prompt.trim().length < 60 && lastPrompt ? `${lastPrompt.slice(0, 600)} || ${prompt}` : prompt;
+    lastPrompt = prompt;
+
+    let r: RouteResponse;
+    try {
+      const res = await fetch(ROUTE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: state.slice(0, 1200), skills: skills.map((s) => ({ name: s.name, description: s.description })), threshold: THRESHOLD, top_k: TOP_K }),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      if (!res.ok) throw new Error(`sidecar ${res.status}`);
+      r = (await res.json()) as RouteResponse;
+    } catch (e) {
+      log({ event: "error", error: String(e) });
+      return; // fail open: turn proceeds without injection
+    }
+
+    const picked = r.picks ?? [];
+    const fresh = picked.filter((p) => !injectedThisSession.has(p.name));
+    const byName = new Map(skills.map((s) => [s.name, s]));
+
+    let body = "";
+    let totalChars = 0;
+    const loaded: string[] = [];
+    for (const p of fresh) {
+      const skill = byName.get(p.name);
+      if (!skill?.path || !skill.path.endsWith("SKILL.md")) continue;
+      let text: string;
+      try {
+        text = stripFrontmatter(readFileSync(skill.path, "utf8"));
+      } catch {
+        continue;
+      }
+      if (totalChars + text.length > MAX_SKILL_CHARS * TOP_K) break;
+      totalChars += text.length;
+      loaded.push(p.name);
+      body += `\n## skill: ${p.name} (laya p=${p.p.toFixed(2)})\n\n${text}\n`;
+      injectedThisSession.add(p.name);
+    }
+
+    const already = picked.filter((p) => injectedThisSession.has(p.name) && !loaded.includes(p.name));
+    log({
+      event: "route",
+      prompt_head: state.slice(0, 100),
+      skill_source: source,
+      n_skills: skills.length,
+      picks: picked.map((p) => ({ name: p.name, p: Number(p.p.toFixed(3)) })),
+      loaded,
+      already_in_context: already.map((p) => p.name),
+      sidecar_ms: r.latency_ms,
+    });
+
+    if (loaded.length === 0 && already.length === 0) {
+      ctx.ui.setStatus("laya-router", `no relevant skills (${r.latency_ms}ms)`);
+      return;
+    }
+
+    if (MODE === "observe") {
+      ctx.ui.setStatus(
+        "laya-router",
+        `observe: ${picked.map((p) => `${p.name} (${p.p.toFixed(2)})`).join(", ")} (${r.latency_ms}ms)`,
+      );
+      return;
+    }
+
+    const summary = [
+      `laya skill router: ${picked.map((p) => `${p.name} (${p.p.toFixed(2)})`).join(", ")}`,
+      loaded.length > 0 ? `loaded now: ${loaded.join(", ")}` : null,
+      already.length > 0 ? `already in context: ${already.map((p) => p.name).join(", ")}` : null,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+
+    ctx.ui.setStatus("laya-router", summary);
+
+    if (loaded.length === 0) {
+      // decision ran, picks were all injected earlier; nothing new to send
+      return;
+    }
+
+    return {
+      message: {
+        customType: "laya-skill-router",
+        content: `<laya-loaded-skills>\nThe laya skill router pre-loaded the following skills for this request. Their full instructions follow; use them without needing to read the files.\n${body}</laya-loaded-skills>`,
+        display: true,
+      },
+    };
+  });
+
+  pi.registerCommand("routerstats", {
+    description: "Show laya skill-router decision stats from the log",
+    handler: async (_args, ctx) => {
+      let lines: string[] = [];
+      try {
+        const text = readFileSync(LOG_FILE, "utf8");
+        lines = text.trim().split("\n").slice(-500);
+      } catch {
+        ctx.ui.notify("No laya router log yet.", "info");
+        return;
+      }
+      const entries = lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean) as Record<string, unknown>[];
+      const routes = entries.filter((e) => e.event === "route") as Array<Record<string, unknown>>;
+      if (routes.length === 0) {
+        ctx.ui.notify("No routing decisions logged yet.", "info");
+        return;
+      }
+      const errors = entries.filter((e) => e.event === "error").length;
+      const picks: Record<string, number> = {};
+      let totalPicks = 0;
+      let totalSidecarMs = 0;
+      for (const r of routes) {
+        totalSidecarMs += Number(r.sidecar_ms ?? 0);
+        for (const p of (r.picks ?? []) as Array<{ name: string }>) {
+          picks[p.name] = (picks[p.name] ?? 0) + 1;
+          totalPicks++;
+        }
+      }
+      const top = Object.entries(picks).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      const msg = [
+        `laya router: ${routes.length} decisions (${errors} errors), avg sidecar ${Math.round(totalSidecarMs / routes.length)}ms`,
+        `avg picks/turn: ${(totalPicks / routes.length).toFixed(2)}`,
+        "top picked skills:",
+        ...top.map(([n, c]) => `  ${String(c).padStart(3)}  ${n}`),
+      ].join("\n");
+      ctx.ui.notify(msg, "info");
+    },
+  });
+}

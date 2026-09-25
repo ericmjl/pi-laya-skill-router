@@ -1,0 +1,16 @@
+# Runtime data — never commit. The router learns from YOUR sessions; that
+# data stays on your machine.
+skills.json
+eval/dataset*.jsonl
+eval/scores*.jsonl
+eval/finetune_results*.md
+finetune/distilled/
+finetune/loop/
+finetune/data/
+finetune/checkpoints/
+finetune/*.log
+nohup.out
+.venv/
+__pycache__/
+*.pyc
+.DS_Store

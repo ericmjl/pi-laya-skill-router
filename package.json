@@ -1,0 +1,17 @@
+{
+  "name": "pi-laya-skill-router",
+  "version": "0.1.0",
+  "description": "Laya-powered skill autorouter for the pi coding agent — routes each turn's skills locally (~35ms/turn) and optionally fine-tunes on your own sessions via a nightly golden-path loop. Routing never leaves your machine.",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ericmjl/pi-laya-skill-router.git"
+  },
+  "scripts": {
+    "setup": "./install.sh"
+  },
+  "pi": {
+    "extensions": ["./extension/index.ts"]
+  }
+}
