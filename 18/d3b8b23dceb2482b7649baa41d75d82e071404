@@ -1,0 +1,38 @@
+package.json
+  s_899e005a730b4c::t_73791445d94004 1-17
+README.md
+  s_899e005a730b4c::t_236ce640afa608 29-30,32-35,40-46
+.gitignore.public
+  s_899e005a730b4c::t_14b39285a00d7c 1-16
+install.sh
+  s_899e005a730b4c::t_bb315e36c1ee16 1-62
+scripts/publish_plugin.py
+  s_899e005a730b4c::t_346f71dcf2acdd 61-68,149-152
+  s_899e005a730b4c::t_1766d4deb5c0c1 132-137,139-147,155
+  s_899e005a730b4c::t_53af094fadba09 114,171-173
+  s_899e005a730b4c::t_5dfa552c60cc2b 1-60,69-113,115-131,138,148,153-154,156-170,174-182
+PUBLISHING.md
+  s_899e005a730b4c::t_70403f1fdce747 1-26
+finetune/README.md
+  s_899e005a730b4c::t_b5411da098de97 111
+launchd/com.ericmjl.laya-nightly.plist
+  s_899e005a730b4c::t_1f0157fd564293 9,15
+launchd/com.ericmjl.laya-sidecar.plist
+  s_899e005a730b4c::t_e399e1b1b453c5 9,15,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "18d3b8b23dceb2482b7649baa41d75d82e071404",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
