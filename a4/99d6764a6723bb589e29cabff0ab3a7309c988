@@ -1,0 +1,25 @@
+finetune/README.md
+  s_899e005a730b4c::t_4f653c5f2fdade 116-135
+launchd/com.ericmjl.laya-nightly.plist
+  s_899e005a730b4c::t_25c13bdbab471b 1-35
+finetune/nightly_loop.py
+  s_899e005a730b4c::t_b5d940ccc7c23e 1-37,39-108,110-298
+  s_899e005a730b4c::t_f4560797b674be 109
+  s_899e005a730b4c::t_37f33c2906d065 38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a499d6764a6723bb589e29cabff0ab3a7309c988",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
