@@ -1,0 +1,77 @@
+.gitignore
+  s_899e005a730b4c::t_35e1809423e22f 1-16
+.markdownlint.json
+  s_899e005a730b4c::t_42fc15a8587bba 1-4
+README.md
+  s_899e005a730b4c::t_65b800f04990d5 1-113
+eval/RESULTS.md
+  s_899e005a730b4c::t_07ef43373ab65e 1-76
+extension/index.ts
+  s_899e005a730b4c::t_f2fd8272864e73 1-289
+finetune/README.md
+  s_899e005a730b4c::t_a012fa80759b02 1-145
+finetune/build_dataset.py
+  s_899e005a730b4c::t_ac76cd2a34eb4f 1-48
+finetune/dataset.py
+  s_899e005a730b4c::t_d92a8f4eb23c1c 1-190
+finetune/distill.py
+  s_899e005a730b4c::t_36f9acd8328cbb 1-56
+finetune/distiller.py
+  s_899e005a730b4c::t_55bc2d8a2627db 1-318
+finetune/eval_ckpt.py
+  s_899e005a730b4c::t_4c892fcd4b1186 1-202
+finetune/laya_backend.py
+  s_899e005a730b4c::t_a8eaa7f1a1b711 1-170
+finetune/nightly_loop.py
+  s_899e005a730b4c::t_528efefdcea25b 1-298
+finetune/probe_sidecar.py
+  s_899e005a730b4c::t_0afd0cf8d1fa59 1-57
+finetune/router_q.py
+  s_899e005a730b4c::t_f64182ddcc15f0 1-58
+finetune/session_data.py
+  s_899e005a730b4c::t_f0ab145bacbbf3 1-288
+finetune/train_laya.py
+  s_899e005a730b4c::t_e7ef483bd1294f 1-65
+finetune/trainer.py
+  s_899e005a730b4c::t_6d1a0eee33a20e 1-287
+install.sh
+  s_899e005a730b4c::t_0af0a037315c79 1-62
+launchd/com.ericmjl.laya-nightly.plist
+  s_899e005a730b4c::t_439e5a655751bf 1-35
+launchd/com.ericmjl.laya-sidecar.plist
+  s_899e005a730b4c::t_d272185028810f 1-32
+package.json
+  s_899e005a730b4c::t_546a18eb4d5e5a 1-17
+pyproject.toml
+  s_899e005a730b4c::t_18c60936993e40 1-14
+scripts/checkpoint_compare.py
+  s_899e005a730b4c::t_8dbd9d0a003580 1-58
+scripts/mine_sessions.py
+  s_899e005a730b4c::t_50d999a55b0cde 1-151
+scripts/run_eval.py
+  s_899e005a730b4c::t_443c9e1c482efb 1-153
+scripts/scan_skills.py
+  s_899e005a730b4c::t_e2b0471afadcec 1-87
+scripts/template_experiment.py
+  s_899e005a730b4c::t_821f2fa3e1263f 1-95
+sidecar/server.py
+  s_899e005a730b4c::t_91d5e8df1f048e 1-158
+uv.lock
+  s_899e005a730b4c::t_57bb403215d321 1-1312
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d3b4db346dd7715ff3e85655b4394564a5c087e5",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
