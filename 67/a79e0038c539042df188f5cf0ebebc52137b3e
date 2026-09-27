@@ -1,0 +1,23 @@
+finetune/README.md
+  s_193853543f5c57::t_f1cec9377b305f 25
+finetune/train_biencoder.py
+  s_193853543f5c57::t_086d0c78aea822 89-90,105,210-211,305
+  s_193853543f5c57::t_114c93483122ed 1-88,91-100,102-104,106-209,212-304,306-355
+  s_193853543f5c57::t_55b400ad14ffe3 101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "67a79e0038c539042df188f5cf0ebebc52137b3e",
+  "prompts": {},
+  "sessions": {
+    "s_193853543f5c57": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e04c-981c-7670-9cc0-bfc484c88c44",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
