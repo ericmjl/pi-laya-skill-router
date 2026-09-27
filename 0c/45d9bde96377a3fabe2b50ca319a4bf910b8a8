@@ -1,0 +1,19 @@
+package.json
+  s_193853543f5c57::t_e4cc0ab95cfcf6 3-7,17-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0c45d9bde96377a3fabe2b50ca319a4bf910b8a8",
+  "prompts": {},
+  "sessions": {
+    "s_193853543f5c57": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e04c-981c-7670-9cc0-bfc484c88c44",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
