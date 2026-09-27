@@ -7,6 +7,7 @@ eval/finetune_results*.md
 finetune/distilled/
 finetune/loop/
 finetune/data/
+finetune/cache/
 finetune/checkpoints/
 finetune/*.log
 nohup.out
