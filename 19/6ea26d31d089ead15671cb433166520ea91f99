@@ -1,0 +1,27 @@
+scripts/run_eval.py
+  s_193853543f5c57::t_543ac6264838c2 27,34
+  s_193853543f5c57::t_578044f7bfb25f 66,101
+extension/index.ts
+  s_193853543f5c57::t_b36bba7bfe4b38 21-25,30
+  s_193853543f5c57::t_47cd92de48895d 164,313-318,330,342
+README.md
+  s_193853543f5c57::t_2dc5f3ab568b9e 54,58-59
+docs/ROUTER_LATENCY_STRATEGY.md
+  s_193853543f5c57::t_95e86a41558e7b 159-181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "196ea26d31d089ead15671cb433166520ea91f99",
+  "prompts": {},
+  "sessions": {
+    "s_193853543f5c57": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e04c-981c-7670-9cc0-bfc484c88c44",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
