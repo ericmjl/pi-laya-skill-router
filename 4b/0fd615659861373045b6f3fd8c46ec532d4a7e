@@ -1,0 +1,19 @@
+.gitignore
+  s_36f70f01fe579e::t_117a2dc6e69c07 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4b0fd615659861373045b6f3fd8c46ec532d4a7e",
+  "prompts": {},
+  "sessions": {
+    "s_36f70f01fe579e": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e421-f74c-7491-9647-c95c20f492e1",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
