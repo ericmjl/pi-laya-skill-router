@@ -38,7 +38,7 @@ cd ~/pi-laya-skill-router && ./install.sh
 ```
 
 Routing runs entirely on your machine. The optional nightly fine-tune loop
-sends transcript excerpts one-way to your configured Anthropic access for
+sends transcript excerpts one-way to the frontier provider configured in pi for
 golden-path labeling; session data itself never leaves your machine and all
 learned artifacts are gitignored by default.
 
@@ -51,14 +51,32 @@ are `__HOME__`/`__UV__` templates; install.sh substitutes and loads them).
 | --- | --- | --- |
 | `LAYA_ROUTER_MODE` | `observe` | `observe` (log only) or `inject` (inject top-k bodies) |
 | `LAYA_ROUTER_URL` | `http://127.0.0.1:8787/route` | Sidecar endpoint |
-| `LAYA_ROUTER_THRESHOLD` | `0.3` | Min p(core) to pick a skill |
+| `LAYA_ROUTER_THRESHOLD` | `0.4` | Min p(core) to pick a skill |
 | `LAYA_ROUTER_TOP_K` | `3` | Max skills injected per turn |
 | `LAYA_ROUTER_MAX_SKILL_CHARS` | `8000` | Per-skill body cap |
-| `LAYA_ROUTER_TIMEOUT_MS` | `2500` | Route call timeout (fail-open) |
+| `LAYA_ROUTER_TIMEOUT_MS` | `3500` | Hard cap on the background route fetch (no longer turn-blocking) |
+| `LAYA_ROUTER_BLOCK_BUDGET_MS` | `450` | Max time `before_agent_start` waits for the route; past budget the turn starts immediately and the result steers mid-run (observe mode blocks 0 — the footer isn't worth blocking for) |
+| `LAYA_ROUTER_USE_DESC` | `1` | Include skill descriptions in the routing question (measured: recall@3 0.736 vs 0.679; ~3.6x slower stage-2) |
 | `LAYA_MODEL` | `convaiinnovations/laya` | Checkpoint |
 | `LAYA_PORT` | `8787` | Sidecar port |
+| `LAYA_CACHE_SIZE` | `512` | Sidecar exact-match LRU entries (predict is deterministic) |
+| `LAYA_WARM_SHAPES` | `1,8,16,24,110` | Batch shapes pre-compiled at sidecar startup |
+| `LAYA_KEEPALIVE_S` | `25` | Seconds between keep-alive passes (0 disables); prevents MPS idle-stall tails |
+| `LAYA_BIENCODER` | _(unset)_ | Path to a distilled bi-encoder (`finetune/train_biencoder.py` output); unset = full-catalog scoring |
+| `LAYA_SHORTLIST_K` | `16` | Stage-1 shortlist size (0 disables two-stage scoring) |
+| `LAYA_S1_MIN_SIM` | `0.35` | Below this stage-1 top cosine, fall back to the full catalog |
 
 Note: ports 8771/8772 are occupied by other local services on this machine.
+
+## Latency
+
+Routing cost is bounded by design: the fetch starts at submit (`input`),
+`before_agent_start` waits at most `LAYA_ROUTER_BLOCK_BUDGET_MS`, and a late
+result is steered into the running turn instead of being lost (the old
+behavior stalled up to 3.5s and then injected nothing). The sidecar adds an
+exact-match cache, batch-shape warmup, and a keep-alive pass. The full
+measured plan — including the two-stage shortlist and the dead ends that
+didn't survive measurement — is `docs/ROUTER_LATENCY_STRATEGY.md`.
 
 ## Behavior details
 

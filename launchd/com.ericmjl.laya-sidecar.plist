@@ -27,6 +27,10 @@
         <string>0</string>
         <key>LAYA_MODEL</key>
         <string>__HOME__/.pi/agent/laya-router/checkpoints/v1</string>
+        <key>LAYA_BIENCODER</key>
+        <string>__HOME__/.pi/agent/laya-router/checkpoints/biencoder-v1</string>
+        <key>LAYA_SHORTLIST_K</key>
+        <string>24</string>
     </dict>
 </dict>
 </plist>

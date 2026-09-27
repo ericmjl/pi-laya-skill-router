@@ -13,23 +13,25 @@ Requires the sidecar running on :8787.
 
 import argparse
 import json
+import os
 import time
 import urllib.request
 from collections import defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-SIDECAR = "http://127.0.0.1:8787/route"
+SIDECAR = os.environ.get("LAYA_EVAL_URL", "http://127.0.0.1:8787/route")
 EARLY_TOOL_CALLS = 6
 
 
-def route(state: str, skills: list[dict], threshold: float, k: int) -> dict:
+def route(state: str, skills: list[dict], threshold: float, k: int, use_desc: bool = False) -> dict:
     payload = json.dumps(
         {
             "state": state[:1400],
             "skills": [{"name": s["name"], "description": s["description"]} for s in skills],
             "threshold": threshold,
             "top_k": k,
+            "use_desc": use_desc,
         }
     ).encode()
     last_err: Exception | None = None
@@ -61,6 +63,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--threshold", type=float, default=0.3)
     ap.add_argument("--k", type=int, default=3)
+    ap.add_argument("--use-desc", action="store_true", help="route with use_desc=true (descriptions in the question)")
     ap.add_argument("--dump", default="eval/scores_v2.jsonl")
     args = ap.parse_args()
 
@@ -95,7 +98,7 @@ def main() -> None:
     for idx, t in enumerate(turns):
         positives = set(t["labels"]) or set(t["bash_labels"])
         state = t["state"] if len(t["state"]) > 60 else (t["prev_state"] + " || " + t["state"]).strip()
-        r = route(state, skills, args.threshold, 10)
+        r = route(state, skills, args.threshold, 10, args.use_desc)
         latencies.append(r["latency_ms"])
         ranked = [p["name"] for p in r["all"]]
         picks = [p["name"] for p in r["picks"]]

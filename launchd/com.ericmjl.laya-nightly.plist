@@ -30,6 +30,8 @@
         <string>0</string>
         <key>PYTHONUNBUFFERED</key>
         <string>1</string>
+        <key>PATH</key>
+        <string>__CLAUDE_BIN__:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
     </dict>
 </dict>
 </plist>

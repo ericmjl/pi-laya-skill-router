@@ -18,10 +18,11 @@ Deep modules, one policy each, dataclass contracts across boundaries:
 | --- | --- | --- |
 | `router_q.py` | `build_question`, criteria constants | the train/serve format contract — the only place criteria wording lives |
 | `session_data.py` | `load_turns`, `render_windows` | pi session-JSONL parsing, turn windowing, SKILL-read annotation |
-| `distiller.py` | `distill_turns` | frontier-model labeling: prompt policy, claude CLI, validation, caching |
+| `distiller.py` | `distill_turns` | frontier-model labeling: prompt policy, pi CLI (headless, tool-less), validation, caching |
 | `dataset.py` | `build_dataset`, `turn_truth`, `load_golden` | the ONE merge of observed+golden labels, sampling, session-level splits |
 | `laya_backend.py` | `load_checkpoint`, `save_checkpoint`, `encode_examples`, `predict_ranking` | checkpoint format, tokenization, stock-SDK-faithful prediction |
 | `trainer.py` | `run_training` | curriculum stages, optimizer groups, CE objective, dev metrics, export |
+| `train_biencoder.py` | teacher scores, `BiEncoder`, `train`, `eval_split` | stage-1 shortlist distillation: dual-tower student of the cross-encoder, full-catalog InfoNCE + distribution match, shortlist-recall eval |
 | `eval_ckpt.py` | `evaluate`, `reports_to_md` | offline metrics vs observed AND golden references, ablations |
 
 ## The golden-path procedure (why distillation)

@@ -34,7 +34,8 @@ echo "==> scanning skills into skills.json"
 install_plist() {
   local src="$REPO/$1" name; name="$(basename "$1")"
   mkdir -p "$LAUNCH_AGENTS"
-  sed -e "s|__UV__|$UV|g" -e "s|__HOME__|$HOME|g" "$src" > "$LAUNCH_AGENTS/$name"
+  local claude_bin=""; claude_bin="$(dirname "$(command -v claude 2>/dev/null || true)")" || true
+  sed -e "s|__UV__|$UV|g" -e "s|__HOME__|$HOME|g" -e "s|__CLAUDE_BIN__|$claude_bin|g" "$src" > "$LAUNCH_AGENTS/$name"
   plutil -lint "$LAUNCH_AGENTS/$name"
   launchctl unload "$LAUNCH_AGENTS/$name" 2>/dev/null || true
   launchctl load "$LAUNCH_AGENTS/$name"

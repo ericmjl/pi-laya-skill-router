@@ -16,7 +16,7 @@ a frontier model together with the full skill catalog and gets back, per turn:
 Deep-module contract:
     distill_turns(turns, catalog, out_dir, ...) -> DistillReport
 
-Hides: prompt policy, claude CLI plumbing, retries, JSON extraction,
+Hides: prompt policy, labeler CLI plumbing (pi), retries, JSON extraction,
 schema validation, per-session caching/resume. Errors are defined out of
 existence downstream: unknown skill names are dropped (and counted), turns
 that never appear in a response default to none-needed, and failed calls
@@ -36,8 +36,8 @@ from typing import Optional
 from router_q import rubric_prose
 from session_data import Turn, render_windows, Window
 
-DEFAULT_CLAUDE = "claude"
-DEFAULT_MODEL = "claude-sonnet-4-5"
+DEFAULT_AGENT = "pi"
+DEFAULT_MODEL = "glm-5.3-flash"
 VALID_STATUS = ("loaded", "should_have", "tangential")
 WHEN_RE = re.compile(r"^(turn_start|after_step_\d+)$")
 
@@ -77,7 +77,7 @@ class DistillReport:
         lines = [
             f"sessions: {self.sessions_ok}/{self.sessions_total} ok, {self.sessions_failed} failed",
             f"turns labeled: {self.turns_labeled} (none-needed: {self.turns_none_needed})",
-            f"claude calls: {self.calls} (+{self.retries} retries)",
+            f"labeler calls: {self.calls} (+{self.retries} retries)",
             f"dropped unknown skill mentions: {self.dropped_skill_mentions}",
         ]
         if self.unknown_names:
@@ -162,20 +162,23 @@ def _extract_json(text: str) -> Optional[dict]:
     return None
 
 
-def _call_claude(prompt: str, model: str, claude_bin: str, timeout_s: int) -> str:
+def _call_labeler(prompt: str, model: str, agent_bin: str, timeout_s: int) -> str:
+    """One headless pi run: final assistant text on stdout, nothing else.
+
+    -ne/-ns/-nbt strip extensions, skills, and tools: the labeler is a pure
+    text call and must not be able to touch the machine. --no-session keeps
+    the run out of ~/.pi/agent/sessions so the miner never mines the
+    labeler's own sessions as new input.
+    """
     proc = subprocess.run(
-        [claude_bin, "-p", prompt, "--model", model, "--output-format", "json"],
+        [agent_bin, "-p", prompt, "--model", model, "-ne", "-ns", "-nbt", "--no-session"],
         capture_output=True, text=True, timeout=timeout_s,
     )
     if proc.returncode != 0:
-        raise RuntimeError(f"claude exit {proc.returncode}: {proc.stderr[:300]}")
-    try:
-        payload = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        raise RuntimeError(f"claude wrapper not json: {proc.stdout[:200]}")
-    result = payload.get("result")
+        raise RuntimeError(f"{agent_bin} exit {proc.returncode}: {proc.stderr[:300]}")
+    result = proc.stdout
     if not isinstance(result, str) or not result.strip():
-        raise RuntimeError("claude returned empty result")
+        raise RuntimeError("labeler returned empty result")
     return result
 
 
@@ -224,13 +227,13 @@ def _validate(response_text: str, catalog: set[str], report: DistillReport,
 
 
 def _distill_window(window: Window, skills: list[dict], catalog: set[str], model: str,
-                    claude_bin: str, timeout_s: int, report: DistillReport) -> dict[int, GoldenTurn]:
+                    agent_bin: str, timeout_s: int, report: DistillReport) -> dict[int, GoldenTurn]:
     prompt = _prompt(window, _catalog_block(skills))
     last_err: Exception | None = None
     for attempt in range(3):
         try:
             report.calls += 1
-            reply = _call_claude(prompt, model, claude_bin, timeout_s)
+            reply = _call_labeler(prompt, model, agent_bin, timeout_s)
             if attempt:
                 report.retries += attempt
             return _validate(reply, catalog, report, window)
@@ -244,7 +247,7 @@ def distill_turns(
     skills: list[dict],
     out_dir: Path,
     model: str = DEFAULT_MODEL,
-    claude_bin: str = DEFAULT_CLAUDE,
+    agent_bin: str = DEFAULT_AGENT,
     budget_chars: int = 300_000,
     timeout_s: int = 900,
     workers: int = 4,
@@ -285,7 +288,7 @@ def distill_turns(
                 return session, cached
         merged: dict[int, GoldenTurn] = {}
         for w in ses_windows:
-            merged.update(_distill_window(w, skills, catalog, model, claude_bin, timeout_s, report))
+            merged.update(_distill_window(w, skills, catalog, model, agent_bin, timeout_s, report))
         payload = {
             "model": model,
             "turns": {

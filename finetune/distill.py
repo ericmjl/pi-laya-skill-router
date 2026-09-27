@@ -1,7 +1,7 @@
 """CLI: run golden-path distillation over all pi sessions.
 
 Usage:
-    uv run python finetune/distill.py [--model claude-sonnet-4-5] [--workers 4]
+    uv run python finetune/distill.py [--model glm-5.3-flash] [--workers 4]
         [--limit N] [--force] [--sessions-dir PATH]
 
 Resumable: per-session caches land in finetune/distilled/ and are reused
