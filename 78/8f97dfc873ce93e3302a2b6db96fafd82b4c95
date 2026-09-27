@@ -1,0 +1,24 @@
+extension/index.ts
+  s_193853543f5c57::t_d2fe3ce60500ed 134
+  s_193853543f5c57::t_8cb195ab7d0c3c 200,207-214,248-252,254-267,269-281,283-340,370
+  s_193853543f5c57::t_219c5b0af9fc08 14
+  s_193853543f5c57::t_7ee4eedf6b097d 25,44-48,133,135-171,176-177,189-199
+  s_193853543f5c57::t_a7786872aeee01 268,282
+  s_193853543f5c57::t_489c86f5d1863c 201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "788f97dfc873ce93e3302a2b6db96fafd82b4c95",
+  "prompts": {},
+  "sessions": {
+    "s_193853543f5c57": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e04c-981c-7670-9cc0-bfc484c88c44",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
