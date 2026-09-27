@@ -1,0 +1,21 @@
+docs/ROUTER_LATENCY_STRATEGY.md
+  s_193853543f5c57::t_732f90d9e50b56 135-159
+.gitignore
+  s_193853543f5c57::t_8fea380aa6aa52 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "84e1f43f109abac98b2d4279db719cc8448e42d2",
+  "prompts": {},
+  "sessions": {
+    "s_193853543f5c57": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e04c-981c-7670-9cc0-bfc484c88c44",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

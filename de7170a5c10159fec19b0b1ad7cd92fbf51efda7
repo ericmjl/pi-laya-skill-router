@@ -1,0 +1,22 @@
+sidecar/server.py
+  s_dd4e70d7c13479::t_9be5d6305477b8 1-28,30-70,72-87,89,95-96,98,102-124,126-134,136-152
+  s_dd4e70d7c13479::t_f3e1743a921016 97,100-101,135
+  s_dd4e70d7c13479::t_0a2c9ca2308d6d 29
+  s_dd4e70d7c13479::t_c8eb46648198a4 71,88,90-94,99,125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "de7170a5c10159fec19b0b1ad7cd92fbf51efda7",
+  "prompts": {},
+  "sessions": {
+    "s_dd4e70d7c13479": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0cb7a-1370-753d-8359-7ebbd796a4c2",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

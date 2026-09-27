@@ -1,0 +1,28 @@
+README.md
+  s_193853543f5c57::t_7a6ff055bbd8c6 57-58,61-66,70-78
+  s_c21d7a65dc3d61::t_0c3d5bf7aa7492 79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4969eee345bd6d71ad11e477713bad9a0bf14cf0",
+  "prompts": {},
+  "sessions": {
+    "s_193853543f5c57": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e04c-981c-7670-9cc0-bfc484c88c44",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    },
+    "s_c21d7a65dc3d61": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e05e-59ad-74d7-92fe-96c48b31bf16",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+finetune/laya_backend.py
+  s_899e005a730b4c::t_b53427a595f2d7 34,36-37,104-105,109-111,121-122,129,133-138
+  s_899e005a730b4c::t_7c4c0b6b3efb88 1-33,35,38-103,106-108,112-120,123-128,130-132,139-163
+finetune/train_laya.py
+  s_899e005a730b4c::t_6f966c255278e2 51
+  s_899e005a730b4c::t_91a0c8162eef55 1-50,52-63
+finetune/trainer.py
+  s_899e005a730b4c::t_d85cac5fceccfd 146-147
+  s_899e005a730b4c::t_5743c894a21589 255
+  s_899e005a730b4c::t_8181ff3b3a998b 1-145,148-254
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e5055a36c00cf34f9b17136c1a829a69ef59502f",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

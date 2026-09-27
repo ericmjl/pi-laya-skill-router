@@ -1,0 +1,25 @@
+finetune/dataset.py
+  s_899e005a730b4c::t_59f2983a12ebe8 48-83,114-115,118,133-136,138-139,142,144,149
+  s_899e005a730b4c::t_7af4a8b7f1d12c 25
+  s_899e005a730b4c::t_0a2839bd739451 1-24,26-47,84-103,105-113,116-117,119-132,137,140-141,143,145-148,150-169
+  s_899e005a730b4c::t_cc9e1a2b36affe 170-190
+  s_899e005a730b4c::t_7ccd5715614d86 104
+finetune/build_dataset.py
+  s_899e005a730b4c::t_ff092fdd66cae6 1-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c97644b5d8fb65f8b5e210b518f504bb3378b859",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

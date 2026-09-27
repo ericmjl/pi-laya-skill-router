@@ -1,0 +1,24 @@
+finetune/distiller.py
+  s_899e005a730b4c::t_8a244841a9293a 291-298
+  s_899e005a730b4c::t_24cd86e39b25ed 1-265,267-290,299-318
+  s_899e005a730b4c::t_cf6662559a06bf 266
+finetune/distill.py
+  s_899e005a730b4c::t_53a2865b9f748d 12
+  s_899e005a730b4c::t_3b24e01ad3e013 1-11,13-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "25ce49d6136f2ee08e0e909c4f3a63fb27bb8d68",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

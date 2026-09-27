@@ -1,0 +1,30 @@
+README.md
+  s_dd4e70d7c13479::t_8dba08935492fc 48,61-65
+eval/RESULTS.md
+  s_dd4e70d7c13479::t_8648176b2ad928 1-76
+scripts/run_eval.py
+  s_dd4e70d7c13479::t_001a0e8c50f435 35-57
+sidecar/server.py
+  s_dd4e70d7c13479::t_c24ab43b4a17d0 20,34,130-134
+extension/index.ts
+  s_dd4e70d7c13479::t_62fbd8e02c2684 20,24
+  s_dd4e70d7c13479::t_5aba7f04544453 219-226
+uv.lock
+  s_dd4e70d7c13479::t_08cafa663979f6 1-1312
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "41a09b951add87fd1ebed4397c7bebfb7fc601ec",
+  "prompts": {},
+  "sessions": {
+    "s_dd4e70d7c13479": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0cb7a-1370-753d-8359-7ebbd796a4c2",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

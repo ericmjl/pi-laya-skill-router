@@ -1,0 +1,22 @@
+finetune/session_data.py
+  s_899e005a730b4c::t_3bc0bbdb5c33ea 128,153,193,196-198,210-219
+  s_899e005a730b4c::t_b224f7f2de2370 258
+  s_899e005a730b4c::t_9b2dd69fd1e0fe 53,182
+  s_899e005a730b4c::t_e7b86cd136eacb 1-52,54-127,129-152,154-181,183-192,194-195,199-209,220-257,259-288
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "43f4d6eb4041fa5650374ef76d5a714b31353a75",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+launchd/com.ericmjl.laya-sidecar.plist
+  s_dd4e70d7c13479::t_0fc03affeb9016 1-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1eeb35cf15bb6e0fbcf9637b103f2fab7eb5c23f",
+  "prompts": {},
+  "sessions": {
+    "s_dd4e70d7c13479": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0cb7a-1370-753d-8359-7ebbd796a4c2",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}

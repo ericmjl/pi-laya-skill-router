@@ -1,0 +1,33 @@
+finetune/probe_sidecar.py
+  s_899e005a730b4c::t_ece49c0df0e517 1-49,53-57
+  s_899e005a730b4c::t_6dbb0821256d34 50-52
+finetune/trainer.py
+  s_899e005a730b4c::t_985fa305208ead 53,153-165,205-207,212
+  s_899e005a730b4c::t_57ac924048c93f 214-221
+eval/finetune_results_long.md
+  s_899e005a730b4c::t_ccaca441d6ff44 1-4
+finetune/train_laya.py
+  s_899e005a730b4c::t_f95db3b10f674c 33,50
+finetune/laya_backend.py
+  s_899e005a730b4c::t_cc009bbbee9f12 151-158
+eval/finetune_results.md
+  s_899e005a730b4c::t_60579c87d39c4a 1-110
+README.md
+  s_899e005a730b4c::t_e95419cfc05b51 24,101-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f33f2fa6b60877b38819eacb000ba895cf6b4807",
+  "prompts": {},
+  "sessions": {
+    "s_899e005a730b4c": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0d2b8-7ba4-72f2-b9b6-f933cf52d4bd",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
