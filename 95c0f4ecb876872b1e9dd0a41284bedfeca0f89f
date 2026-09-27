@@ -1,0 +1,43 @@
+README.md
+  s_193853543f5c57::t_0108279083cb9b 41,54,57-59,62-67,71-80
+docs/ROUTER_LATENCY_STRATEGY.md
+  s_193853543f5c57::t_8458b9c6d7f1fb 1-225
+extension/index.ts
+  s_193853543f5c57::t_fcd8bf5ef7190b 14,21-25,29-30,49-53,138-177,182-183,195-207,213-220,254-258,260-352,382
+finetune/README.md
+  s_193853543f5c57::t_17160e1a066406 21,25
+finetune/distill.py
+  s_193853543f5c57::t_d71a6fdec3df61 4
+finetune/distiller.py
+  s_193853543f5c57::t_eac14a033f185c 19,39-40,80,165-172,174,178-179,181,230,236,250,291
+finetune/train_biencoder.py
+  s_193853543f5c57::t_1f199bd7b3f20d 1-372
+install.sh
+  s_193853543f5c57::t_f2423291caf3e2 37-38
+launchd/com.ericmjl.laya-nightly.plist
+  s_193853543f5c57::t_a5f0371f52fe59 33-34
+launchd/com.ericmjl.laya-sidecar.plist
+  s_193853543f5c57::t_735c3d421e62ce 30-33
+package.json
+  s_193853543f5c57::t_5aabbfe88abd43 3
+scripts/run_eval.py
+  s_193853543f5c57::t_8ad09dfa3745ee 16,23,27,34,66,101
+sidecar/server.py
+  s_193853543f5c57::t_ac2f7a9a1e1db0 5-6,9-22,32-33,35-36,48-55,57,68-129,141-145,150-189,218-222,243-263,270-272,285-298,301-308,311-321,324,328-331,333-338
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "95c0f4ecb876872b1e9dd0a41284bedfeca0f89f",
+  "prompts": {},
+  "sessions": {
+    "s_193853543f5c57": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e04c-981c-7670-9cc0-bfc484c88c44",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
