@@ -168,7 +168,7 @@ def _promote(cand_dir: Path, log) -> None:
     for _ in range(20):
         time.sleep(3)
         try:
-            with urllib.request.urlopen("http://127.0.0.1:8787/health", timeout=5) as r:
+            with urllib.request.urlopen("http://127.0.0.1:7699/health", timeout=5) as r:
                 h = json.load(r)
                 if h.get("loaded"):
                     log(f"promote: sidecar healthy on {h.get('model')}")

@@ -3,7 +3,7 @@
  * locally-served convaiinnovations/laya System-1 decision model.
  *
  * Every turn, before the agent loop starts, all known skills are scored by
- * the laya sidecar (http://127.0.0.1:8787). The top-k "core" skills are
+ * the laya sidecar (http://127.0.0.1:7699). The top-k "core" skills are
  * injected as a visible custom message containing their verbatim SKILL.md
  * bodies, so the main model never has to self-trigger the read.
  *
@@ -16,7 +16,7 @@ import { readFileSync, appendFileSync, mkdirSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, basename, dirname } from "node:path";
 
-const ROUTE_URL = process.env.LAYA_ROUTER_URL ?? "http://127.0.0.1:8787/route";
+const ROUTE_URL = process.env.LAYA_ROUTER_URL ?? "http://127.0.0.1:7699/route";
 const MODE = (process.env.LAYA_ROUTER_MODE ?? "observe") as "observe" | "inject";
 // Defaults = the measured operating point (docs/ROUTER_LATENCY_STRATEGY.md):
 // threshold 0.4 + descriptions in the question gave recall@3 0.736 / prec@3

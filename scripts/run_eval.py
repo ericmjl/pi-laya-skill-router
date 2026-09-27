@@ -8,7 +8,7 @@ V2 changes:
   - recall@1/3/5/10, median gold rank, FP rate on no-load turns
 
 Usage: uv run scripts/run_eval.py [--threshold 0.3] [--k 3]
-Requires the sidecar running on :8787.
+Requires the sidecar running on :7699.
 """
 
 import argparse
@@ -20,7 +20,7 @@ from collections import defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-SIDECAR = os.environ.get("LAYA_EVAL_URL", "http://127.0.0.1:8787/route")
+SIDECAR = os.environ.get("LAYA_EVAL_URL", "http://127.0.0.1:7699/route")
 EARLY_TOOL_CALLS = 6
 
 

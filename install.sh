@@ -6,7 +6,7 @@
 # plugin install can't do for you:
 #   1. uv sync                 (python deps for the sidecar)
 #   2. skills.json             (scans your installed skills into the router catalog)
-#   3. launchd: sidecar        (serves the router on 127.0.0.1:8787, KeepAlive)
+#   3. launchd: sidecar        (serves the router on 127.0.0.1:7699, KeepAlive)
 #   4. launchd: nightly loop   (optional, --with-nightly: auto distill+finetune at 3 AM)
 #
 # Plists in this repo are templates (__HOME__/__UV__); this script substitutes
@@ -52,8 +52,8 @@ fi
 
 echo "==> waiting for sidecar health"
 for _ in $(seq 1 20); do
-  if curl -s --max-time 3 http://127.0.0.1:8787/health | grep -q '"loaded":true'; then
-    curl -s http://127.0.0.1:8787/health; echo
+  if curl -s --max-time 3 http://127.0.0.1:7699/health | grep -q '"loaded":true'; then
+    curl -s http://127.0.0.1:7699/health; echo
     echo "done. now: pi install git:github.com/ericmjl/pi-laya-skill-router"
     exit 0
   fi

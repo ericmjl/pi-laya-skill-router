@@ -14,7 +14,7 @@ import urllib.request
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-SIDECAR = "http://127.0.0.1:8787/route"
+SIDECAR = "http://127.0.0.1:7699/route"
 
 PROBES = [
     # (prompt, expected skill) — the expectation comes from the skill's own
