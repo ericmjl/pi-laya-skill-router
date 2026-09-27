@@ -106,7 +106,7 @@ rsync -a --delete finetune/checkpoints/v1/ ~/.pi/agent/laya-router/checkpoints/v
 cp launchd/com.ericmjl.laya-sidecar.plist ~/Library/LaunchAgents/
 launchctl unload ~/Library/LaunchAgents/com.ericmjl.laya-sidecar.plist
 launchctl load ~/Library/LaunchAgents/com.ericmjl.laya-sidecar.plist
-curl -s localhost:8787/health   # model should name the checkpoint path
+curl -s localhost:7699/health   # model should name the checkpoint path
 ```
 
 The plist sets `LAYA_MODEL=~/.pi/agent/laya-router/checkpoints/v1` (installed with real paths by `install.sh`);

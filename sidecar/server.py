@@ -43,7 +43,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 MODEL_ID = os.environ.get("LAYA_MODEL", "convaiinnovations/laya")
-PORT = int(os.environ.get("LAYA_PORT", "8787"))
+PORT = int(os.environ.get("LAYA_PORT", "7699"))
 STATE_MAX_CHARS = int(os.environ.get("LAYA_STATE_MAX_CHARS", "700"))
 CACHE_SIZE = int(os.environ.get("LAYA_CACHE_SIZE", "512"))
 WARM_SHAPES = [int(n) for n in os.environ.get("LAYA_WARM_SHAPES", "1,8,16,24,110").split(",")]

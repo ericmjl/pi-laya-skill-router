@@ -50,7 +50,7 @@ are `__HOME__`/`__UV__` templates; install.sh substitutes and loads them).
 | Var | Default | Meaning |
 | --- | --- | --- |
 | `LAYA_ROUTER_MODE` | `observe` | `observe` (log only) or `inject` (inject top-k bodies) |
-| `LAYA_ROUTER_URL` | `http://127.0.0.1:8787/route` | Sidecar endpoint |
+| `LAYA_ROUTER_URL` | `http://127.0.0.1:7699/route` | Sidecar endpoint |
 | `LAYA_ROUTER_THRESHOLD` | `0.4` | Min p(core) to pick a skill |
 | `LAYA_ROUTER_TOP_K` | `3` | Max skills injected per turn |
 | `LAYA_ROUTER_MAX_SKILL_CHARS` | `8000` | Per-skill body cap |
@@ -58,7 +58,7 @@ are `__HOME__`/`__UV__` templates; install.sh substitutes and loads them).
 | `LAYA_ROUTER_BLOCK_BUDGET_MS` | `450` | Max time `before_agent_start` waits for the route; past budget the turn starts immediately and the result steers mid-run (observe mode blocks 0 — the footer isn't worth blocking for) |
 | `LAYA_ROUTER_USE_DESC` | `1` | Include skill descriptions in the routing question (measured: recall@3 0.736 vs 0.679; ~3.6x slower stage-2) |
 | `LAYA_MODEL` | `convaiinnovations/laya` | Checkpoint |
-| `LAYA_PORT` | `8787` | Sidecar port |
+| `LAYA_PORT` | `7699` | Sidecar port |
 | `LAYA_CACHE_SIZE` | `512` | Sidecar exact-match LRU entries (predict is deterministic) |
 | `LAYA_WARM_SHAPES` | `1,8,16,24,110` | Batch shapes pre-compiled at sidecar startup |
 | `LAYA_KEEPALIVE_S` | `25` | Seconds between keep-alive passes (0 disables); prevents MPS idle-stall tails |
