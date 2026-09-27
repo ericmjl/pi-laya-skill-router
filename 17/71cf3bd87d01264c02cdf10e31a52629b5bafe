@@ -1,0 +1,33 @@
+scripts/run_eval.py
+  s_36f70f01fe579e::t_62a97ff8684928 11,23
+extension/index.ts
+  s_36f70f01fe579e::t_62a97ff8684928 6,19
+README.md
+  s_36f70f01fe579e::t_62a97ff8684928 53,61
+sidecar/server.py
+  s_36f70f01fe579e::t_62a97ff8684928 46
+finetune/nightly_loop.py
+  s_36f70f01fe579e::t_62a97ff8684928 171
+install.sh
+  s_36f70f01fe579e::t_62a97ff8684928 9,55-56
+finetune/probe_sidecar.py
+  s_36f70f01fe579e::t_62a97ff8684928 17
+finetune/README.md
+  s_36f70f01fe579e::t_62a97ff8684928 109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1771cf3bd87d01264c02cdf10e31a52629b5bafe",
+  "prompts": {},
+  "sessions": {
+    "s_36f70f01fe579e": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e421-f74c-7491-9647-c95c20f492e1",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
