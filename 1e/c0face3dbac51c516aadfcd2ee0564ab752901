@@ -1,0 +1,19 @@
+extension/index.ts
+  s_5f3709c92b0d6b::t_ea7ef4c12f1130 245-255,258-259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1ec0face3dbac51c516aadfcd2ee0564ab752901",
+  "prompts": {},
+  "sessions": {
+    "s_5f3709c92b0d6b": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e780-4939-73c8-afd4-d7d513f3ebe6",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
