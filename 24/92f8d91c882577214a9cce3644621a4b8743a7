@@ -1,0 +1,23 @@
+finetune/nightly_loop.py
+  s_5f3709c92b0d6b::t_f39250ee572231 42
+  s_5f3709c92b0d6b::t_05b57a52d6ead3 47,64,87-92,126-135,162,168,171,212-213,221,245,255-262,264-268,280,301,303
+finetune/eval_ckpt.py
+  s_5f3709c92b0d6b::t_40ca206e9c7741 24,42-43,64,87,95-99,125-128,141-142,153-154,159,165-166,186-187,196-197,210,215
+  s_5f3709c92b0d6b::t_a4320859321688 11-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2492f8d91c882577214a9cce3644621a4b8743a7",
+  "prompts": {},
+  "sessions": {
+    "s_5f3709c92b0d6b": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e780-4939-73c8-afd4-d7d513f3ebe6",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
