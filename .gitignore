@@ -5,6 +5,7 @@ eval/dataset*.jsonl
 eval/scores*.jsonl
 eval/finetune_results*.md
 finetune/distilled/
+finetune/picks/
 finetune/loop/
 finetune/data/
 finetune/cache/
