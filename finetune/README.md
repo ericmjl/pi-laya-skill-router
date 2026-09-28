@@ -19,11 +19,12 @@ Deep modules, one policy each, dataclass contracts across boundaries:
 | `router_q.py` | `build_question`, criteria constants | the train/serve format contract — the only place criteria wording lives |
 | `session_data.py` | `load_turns`, `render_windows` | pi session-JSONL parsing, turn windowing, SKILL-read annotation |
 | `distiller.py` | `distill_turns` | frontier-model labeling: prompt policy, pi CLI (headless, tool-less), validation, caching |
-| `dataset.py` | `build_dataset`, `turn_truth`, `load_golden` | the ONE merge of observed+golden labels, sampling, session-level splits |
+| `mine_picks.py` | `mine_picks`, `load_picks` | route-log → turn join: session identity, ts windows, per-session caches |
+| `dataset.py` | `build_dataset`, `turn_truth`, `classify_pick`, `load_golden` | the ONE merge of observed+golden labels, pick classification, sampling, session-level splits |
 | `laya_backend.py` | `load_checkpoint`, `save_checkpoint`, `encode_examples`, `predict_ranking` | checkpoint format, tokenization, stock-SDK-faithful prediction |
 | `trainer.py` | `run_training` | curriculum stages, optimizer groups, CE objective, dev metrics, export |
 | `train_biencoder.py` | teacher scores, `BiEncoder`, `train`, `eval_split` | stage-1 shortlist distillation: dual-tower student of the cross-encoder, full-catalog InfoNCE + distribution match, shortlist-recall eval |
-| `eval_ckpt.py` | `evaluate`, `reports_to_md` | offline metrics vs observed AND golden references, ablations |
+| `eval_ckpt.py` | `evaluate`, `reports_to_md` | offline metrics vs observed AND golden references, router-FP suppression, ablations |
 
 ## The golden-path procedure (why distillation)
 
@@ -74,6 +75,35 @@ uv run scripts/run_eval.py --k 3 --threshold 0.3   # same protocol as RESULTS.md
 Retraining after new traffic: repeat 1-4. Distillation is cached per session,
 so only new sessions cost frontier-model calls; `--force` relabels.
 
+## The router's own wrong picks (true negatives)
+
+Uniform sampling gives a confidently over-picked skill the same one-in-N
+training presence as a coin-flip skill — the specific mistakes production
+makes never get corrected. But the signal already exists: the extension logs
+every pick with its probability to `~/.pi/agent/laya-router/log.jsonl`.
+`mine_picks.py` joins those picks to their turns (by session-file stem +
+timestamp window; legacy entries by prompt-prefix + window), and the dataset
+builder classifies each against the same truth merge everything else uses:
+
+- pick ∈ positives (observed / golden) → absorbed, no row
+- pick ∈ golden tangential → tangential row attributed `router-picked`
+- pick on a known-truth turn, neither of the above → **`router-fp` row, the
+  true negative**
+- unknown-truth turn → skipped (never a fake negative); `already_in_context`
+  picks skipped ("not used" is ambiguous)
+
+FPs displace sampled draws inside the fixed per-turn negative budget (6 per
+positive turn / 8 per none-needed turn) — they never inflate it — and are
+emitted only for train-split sessions. Test-split picks feed
+`fp_suppression_rate` in the eval: of the router's own FP picks on held-out
+known-truth turns, the fraction now scoring below threshold. The nightly
+gate requires the candidate to match production within 0.02 on it, so
+over-suppression can't buy its way past the recall gate.
+
+The distiller never sees the router's picks — labels stay independent, and
+the join happens after labeling, so golden labels can't rubber-stamp
+suggestions into `should_have`.
+
 ## Design decisions worth knowing
 
 - **Question template is a contract** (`router_q.py`): train and serve must
@@ -118,11 +148,14 @@ for the next training round.
 
 `launchd/com.ericmjl.laya-nightly.plist` runs `finetune/nightly_loop.py` at
 3 AM. Each run distills only NEW sessions (per-session caches make this
-incremental; `--distill-cap` bounds nightly API cost), retrains **from base**
+incremental; `--distill-cap` bounds nightly API cost), mines the route log's
+picks into `finetune/picks/` (cheap, no model — new picks alone trigger a
+retrain), retrains **from base**
 on the full ever-expanding golden set (never from last night's checkpoint —
 errors don't compound), evaluates candidate vs production on the deterministic
 session-hash test holdout, and promotes only through a gate: candidate must
-beat production on golden-recall@3, must not regress no-load picks, and must
+beat production on golden-recall@3, must not regress no-load picks or
+fp_suppression_rate, and must
 stay inside the latency budget. Runs are recorded in `finetune/loop/`
 (`history.jsonl` + per-run `report.md`) and the expanded golden set is
 committed with each run. Failure anywhere never touches the live sidecar.
@@ -136,9 +169,12 @@ launchctl load ~/Library/LaunchAgents/com.ericmjl.laya-nightly.plist
 
 ## Known limitations (v1)
 
-- Negative sampling is uniform over the catalog; hard-negative mining from
-  observe-mode false positives (`~/.pi/agent/laya-router/log.jsonl`) is the
-  obvious v2 upgrade.- `when: after_step_N` labels are validated but the mid-turn *inference*
+- FPs displace sampled draws within the per-turn budget but carry no extra
+  per-skill cap: a skill that is a repeat offender gets a proportionally
+  stronger push-down, and the fp_suppression_rate gate is the guard against
+  over-suppression. If evidence shows a true-positive skill being
+  suppressed, revisit with a per-skill FP cap.
+- `when: after_step_N` labels are validated but the mid-turn *inference*
   wiring (routing between tool calls) is the bigger engineering item named
   in `eval/RESULTS.md`; this checkpoint trains the capability, the harness
   work to consume it is separate.

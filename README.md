@@ -91,7 +91,9 @@ didn't survive measurement — is `docs/ROUTER_LATENCY_STRATEGY.md`.
 - Explicit `/skill:name` invocations bypass the router entirely.
 - Sidecar down = fail-open: turns proceed without injection; footer shows
   `laya-router: sidecar down`.
-- Every decision is logged to `~/.pi/agent/laya-router/log.jsonl`.
+- Every decision is logged to `~/.pi/agent/laya-router/log.jsonl` — which
+  doubles as the training signal: the nightly loop mines the router's own
+  wrong picks out of it as true negatives (see `finetune/README.md`).
 - `/routerstats` prints aggregate stats from the log.
 
 ## Eval
