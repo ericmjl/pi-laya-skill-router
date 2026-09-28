@@ -39,10 +39,12 @@ from dataset import load_golden
 from distiller import DEFAULT_MODEL, distill_turns
 from eval_ckpt import EvalReport, evaluate, reports_to_md
 from laya_backend import DEFAULT_BASE
+from mine_picks import MineReport, mine_picks
 from session_data import DEFAULT_SESSIONS_DIR, load_turns
 
 REPO = Path(__file__).resolve().parent.parent
 DURABLE_CKPT = Path.home() / ".pi" / "agent" / "laya-router" / "checkpoints" / "v1"
+ROUTE_LOG = Path.home() / ".pi" / "agent" / "laya-router" / "log.jsonl"
 
 
 @dataclass
@@ -59,6 +61,7 @@ class LoopConfig:
     # promotion gate
     min_golden_recall3: float = 0.0    # candidate must be strictly above production
     max_noload_regression: float = 0.5  # candidate picks may not exceed prod + this
+    max_fp_regression: float = 0.02    # candidate may not suppress the router's own FPs much worse than prod
     max_latency_p50_ms: int = 4000
 
 
@@ -81,6 +84,12 @@ def decide_promotion(cand: EvalReport, prod: EvalReport, cfg: LoopConfig) -> Dec
         return Decision(False, reasons + [
             f"no-load picks regressed: {prod.noload_picks_mean:.1f} -> {cand.noload_picks_mean:.1f}"])
     reasons.append(f"no-load picks {prod.noload_picks_mean:.1f} -> {cand.noload_picks_mean:.1f}")
+    if prod.fp_suppression_rate is not None and cand.fp_suppression_rate is not None:
+        if cand.fp_suppression_rate < prod.fp_suppression_rate - cfg.max_fp_regression:
+            return Decision(False, reasons + [
+                f"fp suppression regressed: {prod.fp_suppression_rate:.3f} -> {cand.fp_suppression_rate:.3f} "
+                f"(allowed -{cfg.max_fp_regression})"])
+        reasons.append(f"fp suppression {prod.fp_suppression_rate:.3f} -> {cand.fp_suppression_rate:.3f}")
     if cand.latency_p50_ms > cfg.max_latency_p50_ms:
         return Decision(False, reasons + [f"latency p50 {cand.latency_p50_ms}ms over budget"])
     reasons.append(f"latency p50 {cand.latency_p50_ms}ms within budget")
@@ -114,6 +123,16 @@ def _distill(cfg: LoopConfig, log) -> int:
     return len(fresh_turns)
 
 
+def _mine(cfg: LoopConfig, log) -> tuple[dict, MineReport]:
+    """Join the route log's picks to their turns (cheap, log-local).
+    Caches rewrite only on content change, so sessions_updated is the
+    there-is-new-signal signal for the loop."""
+    turns = load_turns()
+    picks, rep = mine_picks(turns, ROUTE_LOG, REPO / "finetune" / "picks")
+    log("mine: " + rep.summary())
+    return picks, rep
+
+
 def _train(cfg: LoopConfig, out: Path, log) -> dict:
     import laya_backend as lb
     from dataset import load_examples
@@ -140,16 +159,16 @@ def _train(cfg: LoopConfig, out: Path, log) -> dict:
     return result.stage_metrics
 
 
-def _eval_pair(cfg: LoopConfig, cand_dir: Path, log) -> tuple[EvalReport, EvalReport]:
+def _eval_pair(cfg: LoopConfig, cand_dir: Path, picks: dict, log) -> tuple[EvalReport, EvalReport]:
     skills = json.load(open(REPO / "skills.json"))
     turns = load_turns()
     golden = load_golden(REPO / "finetune" / "distilled")
     limit = 30 if cfg.smoke else None
     log("eval: candidate on test split")
-    cand = evaluate("candidate", str(cand_dir), turns, golden, skills,
+    cand = evaluate("candidate", str(cand_dir), turns, golden, skills, picks=picks,
                     split="test", limit=limit, log=log)
     log("eval: production on test split")
-    prod = evaluate("production", str(DURABLE_CKPT), turns, golden, skills,
+    prod = evaluate("production", str(DURABLE_CKPT), turns, golden, skills, picks=picks,
                     split="test", limit=limit, log=log)
     return cand, prod
 
@@ -190,7 +209,8 @@ def _prune(keep: int, log) -> None:
 
 
 def _record(cfg: LoopConfig, run_dir: Path, cand: EvalReport, prod: EvalReport,
-            decision: Decision, n_new_sessions: int, status: str, minutes: float) -> Path:
+            decision: Decision, n_new_sessions: int, mine_rep: MineReport | None,
+            status: str, minutes: float) -> Path:
     loop_dir = REPO / "finetune" / "loop"
     loop_dir.mkdir(parents=True, exist_ok=True)
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -198,6 +218,7 @@ def _record(cfg: LoopConfig, run_dir: Path, cand: EvalReport, prod: EvalReport,
         "date": date.today().isoformat(),
         "status": status,
         "new_sessions": n_new_sessions,
+        "mined_picks": asdict(mine_rep) if mine_rep else None,
         "minutes": round(minutes, 1),
         "decision": asdict(decision),
         "candidate": asdict(cand),
@@ -221,6 +242,7 @@ def run_nightly(cfg: LoopConfig, log=None) -> int:
     day = date.today().isoformat()
     cand_dir = REPO / "finetune" / "checkpoints" / ("smoke" if cfg.smoke else day)
     status, cand, prod, decision, n_new = "failed", None, None, Decision(False, []), 0
+    mine_rep: MineReport | None = None
 
     def budget_left() -> bool:
         return (time.time() - t0) < cfg.time_budget_min * 60
@@ -230,10 +252,20 @@ def run_nightly(cfg: LoopConfig, log=None) -> int:
             subprocess.run([sys.executable, str(REPO / "scripts" / "scan_skills.py")], check=True)
         n_new = _distill(cfg, log) if budget_left() else 0
 
+        # Mine the router's own picks off the route log (cheap, no model).
+        # Runs even with zero new sessions: the first run after deploying the
+        # session-id-logging extension has a backlog of picks to join, and
+        # those FPs alone are new training signal worth a retrain.
+        picks: dict = {}
+        if budget_left():
+            picks, mine_rep = _mine(cfg, log)
+
         if n_new == 0 and not cfg.smoke:
-            status = "no-new-data"
-            log("no new sessions; nothing to retrain on")
-            return 0
+            if mine_rep is None or mine_rep.sessions_updated == 0:
+                status = "no-new-data"
+                log("no new sessions; nothing to retrain on")
+                return 0
+            log("no new sessions, but newly mined picks; retraining on them")
 
         cand = None
         if budget_left():
@@ -245,7 +277,7 @@ def run_nightly(cfg: LoopConfig, log=None) -> int:
             log("out of time budget before training; recording only")
 
         if cand_dir.exists() and budget_left():
-            cand, prod = _eval_pair(cfg, cand_dir, log)
+            cand, prod = _eval_pair(cfg, cand_dir, picks, log)
         if cand is not None and prod is not None:
             decision = decide_promotion(cand, prod, cfg)
             log("gate: " + ("; ".join(decision.reasons)))
@@ -266,9 +298,9 @@ def run_nightly(cfg: LoopConfig, log=None) -> int:
         if cand is not None and prod is not None:
             try:
                 run_dir = _record(cfg, REPO / "finetune" / "loop" / day, cand, prod,
-                                  decision, n_new, status, minutes)
+                                  decision, n_new, mine_rep, status, minutes)
                 log(f"recorded {run_dir}/report.md")
-                subprocess.run(["git", "add", "finetune/distilled", "finetune/loop"],
+                subprocess.run(["git", "add", "finetune/distilled", "finetune/picks", "finetune/loop"],
                                cwd=REPO, capture_output=True)
                 subprocess.run(["git", "commit", "-m", f"data: nightly golden set {day} ({status})"],
                                cwd=REPO, capture_output=True)
