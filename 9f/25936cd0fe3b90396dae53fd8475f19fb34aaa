@@ -1,0 +1,23 @@
+.gitignore
+  s_5f3709c92b0d6b::t_58341834883228 8
+finetune/mine_picks.py
+  s_5f3709c92b0d6b::t_e2fd9462bb7ac6 174,184,207,225
+  s_5f3709c92b0d6b::t_73c4bde86ebe86 1-22,30-54,57-62,64-134,138-173,175-183,185-206,208-224,226-276
+  s_5f3709c92b0d6b::t_86dc246bef01a4 23-29,55-56,63,135-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9f25936cd0fe3b90396dae53fd8475f19fb34aaa",
+  "prompts": {},
+  "sessions": {
+    "s_5f3709c92b0d6b": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e780-4939-73c8-afd4-d7d513f3ebe6",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
