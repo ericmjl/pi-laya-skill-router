@@ -1,0 +1,22 @@
+README.md
+  s_5f3709c92b0d6b::t_fffad2bb1af283 94-96
+finetune/README.md
+  s_5f3709c92b0d6b::t_52806fcfa9397a 22-23,78-106,151-153,157-158,172-177
+  s_5f3709c92b0d6b::t_f8d7c676947b33 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "34ac893981abba8ada821cc1a39a43cc9ccfb85c",
+  "prompts": {},
+  "sessions": {
+    "s_5f3709c92b0d6b": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e780-4939-73c8-afd4-d7d513f3ebe6",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
