@@ -242,8 +242,21 @@ export default function layaSkillRouter(pi: ExtensionAPI) {
     }
 
     const already = picked.filter((p) => injectedThisSession.has(p.name) && !loaded.includes(p.name));
+    // Session identity for the negative-mining join (finetune/mine_picks.py):
+    // session_stem is the session-file name that session_data.py uses as its
+    // session id (exact join); session_id is pi's bare uuid (unique, but not
+    // the file stem). prompt_head remains the fallback for legacy entries.
+    let sessionId: string | null = null;
+    let sessionStem: string | null = null;
+    try {
+      sessionId = activeCtx?.sessionManager.getSessionId() ?? null;
+      const f = activeCtx?.sessionManager.getSessionFile();
+      sessionStem = f ? basename(f).replace(/\.jsonl$/, "") : null;
+    } catch { /* identity is best-effort; mining falls back to prompt_head */ }
     log({
       event: "route",
+      session_id: sessionId,
+      session_stem: sessionStem,
       prompt_head: state.slice(0, 100),
       skill_source: source,
       n_skills: skills.length,
