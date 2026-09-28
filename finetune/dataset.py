@@ -8,6 +8,13 @@ Merge policy (the interesting part — everything else is plumbing):
   positives  observed reads ∪ golden.loaded ∪ golden.should_have  -> target core
   near-miss  golden.tangential                                    -> target tangential
   negatives  catalog minus the above, sampled per turn            -> target unrelated
+  router picks joined from the route log (mine_picks.py) classify against
+  this same merge: picks already in positives are absorbed by truth, picks
+  in golden tangential become guaranteed tangential rows, and everything
+  else on a known-truth turn is the router's own false positive -> target
+  unrelated. FPs displace sampled draws inside the fixed per-turn negative
+  budget (they never raise it) and are emitted only for train-split
+  sessions; dev/test picks are reserved for the fp_suppression_rate eval.
   low-confidence golden turns and turns with no signal at all are skipped:
   unknown ground truth must not become fake negatives.
 
@@ -24,6 +31,8 @@ from pathlib import Path
 
 from router_q import CORE, TANGENTIAL, UNRELATED
 from session_data import Turn, session_split
+
+from mine_picks import JoinedPick
 
 # Sampling sizes per turn kind.
 NEG_PER_POSITIVE_TURN = 6     # turns that need skills: fixed negative floor
@@ -81,6 +90,21 @@ def turn_truth(turn: Turn, g, catalog: set[str]) -> Truth:
     return Truth(positives=positives, tangentials=tangentials, known=known)
 
 
+def classify_pick(truth: Truth, skill: str) -> str:
+    """One router pick against the turn's truth merge (truth must be known;
+    callers skip unknown-truth turns rather than minting fake negatives).
+
+    This is the second consumer of the merge, next to the dataset builder:
+    the eval's fp_suppression_rate classifies with the exact same function,
+    so training rows and eval targets cannot drift apart.
+    """
+    if skill in truth.positives:
+        return CORE
+    if skill in truth.tangentials:
+        return TANGENTIAL
+    return UNRELATED
+
+
 def _short_state(turn: Turn) -> str:
     state = turn.state
     if len(state.strip()) <= MIN_SHORT_STATE and turn.prev_state:
@@ -92,11 +116,14 @@ def build_dataset(
     turns: list[Turn],
     golden: dict[str, dict[int, "object"]],
     skills: list[dict],
+    picks: dict[str, list[JoinedPick]] | None = None,
     seed: int = 13,
     splits=(0.7, 0.15, 0.15),
 ) -> tuple[list[Example], dict]:
     """golden: {session: {turn_index: GoldenTurn}} (missing sessions/turns =
-    no signal). Returns (examples, stats)."""
+    no signal). picks: mine_picks' {turn_key: [JoinedPick]} — the router's
+    own picks joined to turns, classified here against the truth merge.
+    Returns (examples, stats)."""
     rng = random.Random(seed)
     catalog = {s["name"]: s for s in skills}
     by_session: dict[str, list[Turn]] = {}
@@ -105,7 +132,7 @@ def build_dataset(
 
     examples: list[Example] = []
     stats = {"turns_pos": 0, "turns_none": 0, "turns_skipped": 0,
-             "pos": 0, "tang": 0, "neg": 0}
+             "pos": 0, "tang": 0, "neg": 0, "neg_fp": 0, "tang_picked": 0}
 
     for session, sturns in by_session.items():
         split = session_split(session, splits)
@@ -135,13 +162,37 @@ def build_dataset(
                 ev = gsession.get(turn.turn_index).evidence.get(s, "") if gsession.get(turn.turn_index) else ""
                 emit(s, CORE, truth.positives[s], when, ev)
                 stats["pos"] += 2
-            for s, ev in sorted(truth.tangentials.items()):
-                emit(s, TANGENTIAL, "distilled", evidence=ev)
-                stats["tang"] += 2
 
+            # The router's own picks, classified against the same merge:
+            # a picked tangential keeps its golden evidence but is attributed
+            # router-picked (guaranteed by the route log, not a spontaneous
+            # distiller label — emitted once, never double-weighted), and a
+            # picked skill that truth says was neither positive nor tangential
+            # is the router's own false positive. FPs exist only for
+            # train-split sessions — dev/test picks belong to the eval's
+            # fp_suppression_rate, so the gate measures held-out behavior.
             taken = set(truth.positives) | set(truth.tangentials)
+            picked_names = {v.skill for v in (picks or {}).get(turn.key, [])}
+            for s, ev in sorted(truth.tangentials.items()):
+                src = "router-picked" if s in picked_names else "distilled"
+                emit(s, TANGENTIAL, src, evidence=ev)
+                stats["tang"] += 2
+                if src == "router-picked":
+                    stats["tang_picked"] += 2
+
+            fp_skills: list[str] = []
+            for v in sorted((picks or {}).get(turn.key, []), key=lambda v: v.skill):
+                if classify_pick(truth, v.skill) == UNRELATED and split == "train":
+                    fp_skills.append(v.skill)
+                    taken.add(v.skill)
+                    emit(v.skill, UNRELATED, "router-fp")
+                    stats["neg"] += 2
+                    stats["neg_fp"] += 2
+
+            # FPs displace sampled draws inside the fixed per-turn budget —
+            # they fill it first, random draws fill the remainder.
             pool = sorted(set(catalog) - taken)
-            n_neg = NEG_PER_POSITIVE_TURN if truth.positives else NEG_FLOOR_NONE_NEEDED
+            n_neg = max(0, (NEG_PER_POSITIVE_TURN if truth.positives else NEG_FLOOR_NONE_NEEDED) - len(fp_skills))
             for s in rng.sample(pool, min(n_neg, len(pool))):
                 emit(s, UNRELATED, "sampled")
                 stats["neg"] += 2
