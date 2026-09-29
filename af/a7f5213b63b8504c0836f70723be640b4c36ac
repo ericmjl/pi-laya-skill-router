@@ -2,12 +2,15 @@ data_paths.py
   s_36f70f01fe579e::t_c7f881ddd7af8a 1-48
 finetune/build_dataset.py
   s_36f70f01fe579e::t_241cf3489daa19 17-18,29,32,36
+  s_5f3709c92b0d6b::t_591527f8fd8f9c 30
 finetune/distill.py
   s_36f70f01fe579e::t_c4e05f8e39003c 17-18,37,45
 finetune/eval_ckpt.py
   s_36f70f01fe579e::t_fa5ce50d7fea2d 19,24-26,193,197,225
+  s_5f3709c92b0d6b::t_e849213a1e6980 190
 finetune/nightly_loop.py
   s_36f70f01fe579e::t_feace8219a54a5 37-38,112,114,143-144,165,167,207,216,245,253,302,305-306,308
+  s_5f3709c92b0d6b::t_a5fa50b225b38d 133
 finetune/train_laya.py
   s_36f70f01fe579e::t_03f3f162288f0a 14-15,27-28,63
 scripts/checkpoint_compare.py
@@ -33,6 +36,14 @@ scripts/run_eval.py
       "agent_id": {
         "tool": "pi",
         "id": "01a0e421-f74c-7491-9647-c95c20f492e1",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    },
+    "s_5f3709c92b0d6b": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e780-4939-73c8-afd4-d7d513f3ebe6",
         "model": "glm-5.3-flash"
       },
       "human_author": "Eric Ma <ericmajinglong@gmail.com>"
