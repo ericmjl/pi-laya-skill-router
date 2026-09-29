@@ -1,0 +1,41 @@
+data_paths.py
+  s_36f70f01fe579e::t_c7f881ddd7af8a 1-48
+finetune/build_dataset.py
+  s_36f70f01fe579e::t_241cf3489daa19 17-18,28-29,33
+finetune/distill.py
+  s_36f70f01fe579e::t_c4e05f8e39003c 17-18,37,45
+finetune/eval_ckpt.py
+  s_36f70f01fe579e::t_fa5ce50d7fea2d 17,22-24,172,176,202
+finetune/nightly_loop.py
+  s_36f70f01fe579e::t_feace8219a54a5 37-38,103,105,124-125,146,148,188,196,224,231,270,273-274,276
+finetune/train_laya.py
+  s_36f70f01fe579e::t_03f3f162288f0a 14-15,27-28,63
+scripts/checkpoint_compare.py
+  s_36f70f01fe579e::t_91adafc42b3ec9 6-9,35
+scripts/mine_sessions.py
+  s_36f70f01fe579e::t_03c9193c0ed1de 17,21-23,25
+scripts/scan_skills.py
+  s_36f70f01fe579e::t_660333db157ca4 71,76-81
+scripts/template_experiment.py
+  s_36f70f01fe579e::t_580ad94072a31d 9-13,74
+finetune/probe_sidecar.py
+  s_36f70f01fe579e::t_c5d1f295bd693d 17-19,50
+scripts/run_eval.py
+  s_36f70f01fe579e::t_5353ea338da56f 17,24-25,73,75,97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "10d21953994a7941773249209aa68a6e13d698ef",
+  "prompts": {},
+  "sessions": {
+    "s_36f70f01fe579e": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e421-f74c-7491-9647-c95c20f492e1",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
