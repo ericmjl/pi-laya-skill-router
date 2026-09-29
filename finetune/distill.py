@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_paths import data_file
 
 from distiller import DEFAULT_MODEL, distill_turns
 from session_data import DEFAULT_SESSIONS_DIR, load_turns
@@ -32,7 +34,7 @@ def main() -> None:
     ap.add_argument("--sessions-dir", type=Path, default=DEFAULT_SESSIONS_DIR)
     args = ap.parse_args()
 
-    skills = json.load(open(REPO / "skills.json"))
+    skills = json.load(open(data_file("skills.json")))
     turns = load_turns(args.sessions_dir)
     if args.limit:
         keep = sorted({t.session for t in turns})[: args.limit]
@@ -40,7 +42,7 @@ def main() -> None:
 
     print(f"distilling {len(turns)} turns with {args.model} (workers={args.workers})")
     golden, report = distill_turns(
-        turns, skills, out_dir=REPO / "finetune" / "distilled",
+        turns, skills, out_dir=data_file("finetune", "distilled"),
         model=args.model, workers=args.workers, budget_chars=args.budget_chars,
         timeout_s=args.timeout, force=args.force,
     )

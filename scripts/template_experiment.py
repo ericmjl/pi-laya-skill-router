@@ -6,6 +6,11 @@ under several question templates, and reports MRR + impostor gaps.
 
 import json
 import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_paths import data_file
 
 os.environ.setdefault("USE_TF", "0")
 
@@ -66,7 +71,7 @@ def mrr(ranked_names: list[str], relevant: list[str]) -> float:
 
 
 def main() -> None:
-    skills = json.load(open("skills.json"))
+    skills = json.load(open(data_file("skills.json")))
     catalog = {s["name"]: s["description"][:220] for s in skills}
     agent = laya.load("convaiinnovations/laya", device="mps")
 

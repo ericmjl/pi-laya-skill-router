@@ -14,11 +14,15 @@ separately as `bash_labels` for diagnostics but not used as primary labels.
 
 import json
 import re
+import sys
 from collections import defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_paths import data_file  # noqa: E402
+
 SESSIONS = Path.home() / ".pi" / "agent" / "sessions"
-OUT = Path(__file__).resolve().parent.parent / "eval" / "dataset.jsonl"
+OUT = data_file("eval", "dataset.jsonl")
 
 SKILL_MD_RE = re.compile(r"(SKILL\.md)$")
 

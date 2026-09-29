@@ -14,6 +14,8 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_paths import data_file
 
 from dataset import build_dataset, load_golden, write_jsonl
 from mine_picks import load_picks
@@ -24,14 +26,14 @@ REPO = Path(__file__).resolve().parent.parent
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--distilled-dir", type=Path, default=REPO / "finetune" / "distilled")
-    ap.add_argument("--picks-dir", type=Path, default=REPO / "finetune" / "picks",
+    ap.add_argument("--distilled-dir", type=Path, default=data_file("finetune", "distilled"))
+    ap.add_argument("--picks-dir", type=Path, default=data_file("finetune", "picks"),
                     help="mine_picks cache dir; the router's own joined picks")
-    ap.add_argument("--out-dir", type=Path, default=REPO / "finetune" / "data")
+    ap.add_argument("--out-dir", type=Path, default=data_file("finetune", "data"))
     ap.add_argument("--seed", type=int, default=13)
     args = ap.parse_args()
 
-    skills = json.load(open(REPO / "skills.json"))
+    skills = json.load(open(data_file("skills.json")))
     turns = load_turns()
     golden = load_golden(args.distilled_dir)
     picks = load_picks(args.picks_dir)

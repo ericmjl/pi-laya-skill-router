@@ -34,6 +34,8 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_paths import data_dir, data_file, data_root, ensure_git
 
 from dataset import load_golden
 from distiller import DEFAULT_MODEL, distill_turns
@@ -107,9 +109,9 @@ def _new_sessions(turns, distilled_dir: Path, cap: int):
 
 
 def _distill(cfg: LoopConfig, log) -> int:
-    skills = json.load(open(REPO / "skills.json"))
+    skills = json.load(open(data_file("skills.json")))
     turns = load_turns()
-    distilled = REPO / "finetune" / "distilled"
+    distilled = data_dir("finetune", "distilled")
     fresh_turns, n_new = _new_sessions(turns, distilled, cfg.distill_cap)
     if not fresh_turns:
         log("distill: no new sessions")
@@ -128,7 +130,7 @@ def _mine(cfg: LoopConfig, log) -> tuple[dict, MineReport]:
     Caches rewrite only on content change, so sessions_updated is the
     there-is-new-signal signal for the loop."""
     turns = load_turns()
-    picks, rep = mine_picks(turns, ROUTE_LOG, REPO / "finetune" / "picks")
+    picks, rep = mine_picks(turns, ROUTE_LOG, data_dir("finetune", "picks"))
     log("mine: " + rep.summary())
     return picks, rep
 
@@ -138,8 +140,8 @@ def _train(cfg: LoopConfig, out: Path, log) -> dict:
     from dataset import load_examples
     from trainer import TrainConfig, run_training
 
-    skills = json.load(open(REPO / "skills.json"))
-    data = REPO / "finetune" / "data"
+    skills = json.load(open(data_file("skills.json")))
+    data = data_dir("finetune", "data")
     # rebuild from the full golden set
     import subprocess as sp
     r = sp.run([sys.executable, str(REPO / "finetune" / "build_dataset.py")],
@@ -160,9 +162,9 @@ def _train(cfg: LoopConfig, out: Path, log) -> dict:
 
 
 def _eval_pair(cfg: LoopConfig, cand_dir: Path, picks: dict, log) -> tuple[EvalReport, EvalReport]:
-    skills = json.load(open(REPO / "skills.json"))
+    skills = json.load(open(data_file("skills.json")))
     turns = load_turns()
-    golden = load_golden(REPO / "finetune" / "distilled")
+    golden = load_golden(data_dir("finetune", "distilled"))
     limit = 30 if cfg.smoke else None
     log("eval: candidate on test split")
     cand = evaluate("candidate", str(cand_dir), turns, golden, skills, picks=picks,
@@ -202,7 +204,7 @@ def _promote(cand_dir: Path, log) -> None:
 
 
 def _prune(keep: int, log) -> None:
-    runs = sorted((REPO / "finetune" / "checkpoints").glob("????-??-??"))
+    runs = sorted(data_dir("finetune", "checkpoints").glob("????-??-??"))
     for old in runs[:-keep] if len(runs) > keep else []:
         shutil.rmtree(old, ignore_errors=True)
         log(f"pruned {old.name}")
@@ -211,7 +213,7 @@ def _prune(keep: int, log) -> None:
 def _record(cfg: LoopConfig, run_dir: Path, cand: EvalReport, prod: EvalReport,
             decision: Decision, n_new_sessions: int, mine_rep: MineReport | None,
             status: str, minutes: float) -> Path:
-    loop_dir = REPO / "finetune" / "loop"
+    loop_dir = data_dir("finetune", "loop")
     loop_dir.mkdir(parents=True, exist_ok=True)
     run_dir.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -240,7 +242,7 @@ def run_nightly(cfg: LoopConfig, log=None) -> int:
     log = log or (lambda m: print(m, flush=True))
     t0 = time.time()
     day = date.today().isoformat()
-    cand_dir = REPO / "finetune" / "checkpoints" / ("smoke" if cfg.smoke else day)
+    cand_dir = data_dir("finetune", "checkpoints", "smoke" if cfg.smoke else day)
     status, cand, prod, decision, n_new = "failed", None, None, Decision(False, []), 0
     mine_rep: MineReport | None = None
 
@@ -248,7 +250,7 @@ def run_nightly(cfg: LoopConfig, log=None) -> int:
         return (time.time() - t0) < cfg.time_budget_min * 60
 
     try:
-        if not (REPO / "skills.json").exists():
+        if not data_file("skills.json").exists():
             subprocess.run([sys.executable, str(REPO / "scripts" / "scan_skills.py")], check=True)
         n_new = _distill(cfg, log) if budget_left() else 0
 
@@ -297,13 +299,13 @@ def run_nightly(cfg: LoopConfig, log=None) -> int:
         minutes = (time.time() - t0) / 60
         if cand is not None and prod is not None:
             try:
-                run_dir = _record(cfg, REPO / "finetune" / "loop" / day, cand, prod,
+                run_dir = _record(cfg, data_dir("finetune", "loop", day), cand, prod,
                                   decision, n_new, mine_rep, status, minutes)
                 log(f"recorded {run_dir}/report.md")
-                subprocess.run(["git", "add", "finetune/distilled", "finetune/picks", "finetune/loop"],
-                               cwd=REPO, capture_output=True)
+                ensure_git()
+                subprocess.run(["git", "add", "-A"], cwd=data_root(), capture_output=True)
                 subprocess.run(["git", "commit", "-m", f"data: nightly golden set {day} ({status})"],
-                               cwd=REPO, capture_output=True)
+                               cwd=data_root(), capture_output=True)
             except Exception as exc:
                 log(f"record/commit failed (non-fatal): {exc}")
         else:

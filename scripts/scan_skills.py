@@ -68,12 +68,17 @@ def scan(project: str | None) -> list[dict]:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default="skills.json")
+    ap.add_argument("--out", default="")
     ap.add_argument("--project", default=os.getcwd())
     args = ap.parse_args()
 
     skills = scan(args.project)
-    out = Path(args.out)
+    if args.out:
+        out = Path(args.out)
+    else:
+        from data_paths import data_file
+        out = data_file("skills.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(skills, indent=2) + "\n")
     print(f"{len(skills)} skills -> {out}")
     by_src: dict[str, int] = {}

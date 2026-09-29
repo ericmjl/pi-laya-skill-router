@@ -3,6 +3,10 @@
 import json
 import os
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_paths import data_file
 
 os.environ.setdefault("USE_TF", "0")
 
@@ -28,7 +32,7 @@ def mrr(ranked, relevant):
 
 def main():
     repo = os.path.expanduser("~/github/pi-laya-skill-router")
-    skills = json.load(open(os.path.join(repo, "skills.json")))
+    skills = json.load(open(data_file("skills.json")))
     catalog = {s["name"]: s["description"][:220] for s in skills}
 
     for model_id in sys.argv[1:]:

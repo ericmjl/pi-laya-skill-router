@@ -16,9 +16,13 @@ checkpoint without touching its config.
 """
 
 import json
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_paths import data_file
 
 import laya_backend as lb
 from dataset import classify_pick, turn_truth
@@ -183,14 +187,14 @@ def main() -> None:
     ap.add_argument("--max-len", default="", help="comma list: ablation on the LAST --ckpt")
     ap.add_argument("--threshold", type=float, default=0.3)
     ap.add_argument("--top-k", type=int, default=10)
-    ap.add_argument("--picks-dir", type=Path, default=repo / "finetune" / "picks",
+    ap.add_argument("--picks-dir", type=Path, default=data_file("finetune", "picks"),
                     help="mine_picks cache dir; empty/missing disables the fp metric")
     ap.add_argument("--limit", type=int, default=None)
-    ap.add_argument("--out", default="eval/finetune_results.md")
+    ap.add_argument("--out", default="eval/finetune_results.md")  # resolved under the data root
     args = ap.parse_args()
 
     repo = Path(__file__).resolve().parent.parent
-    skills = json.load(open(repo / "skills.json"))
+    skills = json.load(open(data_file("skills.json")))
     turns = load_turns()
     golden = load_golden(repo / "finetune" / "distilled")
     from mine_picks import load_picks
@@ -218,7 +222,7 @@ def main() -> None:
 
     md = reports_to_md(reports)
     print(md)
-    Path(args.out).write_text(md)
+    data_file(*Path(args.out).parts).write_text(md)
 
 
 if __name__ == "__main__":

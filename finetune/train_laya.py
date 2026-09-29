@@ -11,6 +11,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from data_paths import data_file
 
 from dataset import load_examples
 from laya_backend import DEFAULT_BASE, load_checkpoint
@@ -22,8 +24,8 @@ REPO = Path(__file__).resolve().parent.parent
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--base", default=DEFAULT_BASE)
-    ap.add_argument("--data-dir", type=Path, default=REPO / "finetune" / "data")
-    ap.add_argument("--out", type=Path, default=REPO / "finetune" / "checkpoints" / "v1")
+    ap.add_argument("--data-dir", type=Path, default=data_file("finetune", "data"))
+    ap.add_argument("--out", type=Path, default=data_file("finetune", "checkpoints", "v1"))
     ap.add_argument("--max-len-short", type=int, default=512)
     ap.add_argument("--max-len-long", type=int, default=2048)
     ap.add_argument("--epochs-short", type=int, default=3)
@@ -58,7 +60,7 @@ def main() -> None:
 
 def _catalog():
     import json
-    return json.load(open(REPO / "skills.json"))
+    return json.load(open(data_file("skills.json")))
 
 
 if __name__ == "__main__":

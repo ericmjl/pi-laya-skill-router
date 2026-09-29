@@ -14,12 +14,15 @@ Requires the sidecar running on :7699.
 import argparse
 import json
 import os
+import sys
 import time
 import urllib.request
 from collections import defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO))
+from data_paths import data_file  # noqa: E402
 SIDECAR = os.environ.get("LAYA_EVAL_URL", "http://127.0.0.1:7699/route")
 EARLY_TOOL_CALLS = 6
 
@@ -67,9 +70,9 @@ def main() -> None:
     ap.add_argument("--dump", default="eval/scores_v2.jsonl")
     args = ap.parse_args()
 
-    skills = json.load(open(REPO / "skills.json"))
+    skills = json.load(open(data_file("skills.json")))
     catalog = {s["name"] for s in skills}
-    turns = [json.loads(l) for l in open(REPO / "eval" / "dataset.jsonl")]
+    turns = [json.loads(l) for l in open(data_file("eval", "dataset.jsonl"))]
     # labels pointing at skills that no longer exist on disk can never be
     # routed; count those turns as no-load instead
     dropped = 0
@@ -91,7 +94,7 @@ def main() -> None:
             t["turn_index"] = i
 
     latencies = []
-    out = open(REPO / args.dump, "w")
+    out = open(data_file(*Path(args.dump).parts), "w")
     ks = [1, 3, 5, 10]
     metrics: dict[str, list[float]] = defaultdict(list)
     t_start = time.time()

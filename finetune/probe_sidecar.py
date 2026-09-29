@@ -14,6 +14,9 @@ import urllib.request
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO))
+from data_paths import data_file
+
 SIDECAR = "http://127.0.0.1:7699/route"
 
 PROBES = [
@@ -44,7 +47,7 @@ def route(prompt: str, skills: list[dict]) -> dict:
 
 def main() -> None:
     prompts = sys.argv[1:] or PROBES
-    skills = json.load(open(REPO / "skills.json"))
+    skills = json.load(open(data_file("skills.json")))
     for p in prompts:
         r = route(p, skills)
         picks = ", ".join(
