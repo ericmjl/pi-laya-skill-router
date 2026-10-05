@@ -7,11 +7,23 @@
  * injected as a visible custom message containing their verbatim SKILL.md
  * bodies, so the main model never has to self-trigger the read.
  *
+ * LAYA_ROUTER_CATALOG=hide additionally strips the built-in <skills> prompt
+ * section (the name+description catalog) down to LAYA_ROUTER_ALWAYS_ON on
+ * every turn — on a machine with ~86 installed skills that catalog is
+ * ~32k chars (~8.5k tokens) attached to every single request. A small
+ * `skill_search` tool is registered as the escape hatch for router misses.
+ * The filter is applied identically on every turn (including /skill: turns)
+ * so the section stays byte-stable: swapping skill subsets per turn would
+ * invalidate the model server's KV prefix cache at position ~0 and turn
+ * every warm prefill cold. Routed picks ride in at the conversation tail
+ * instead, which keeps the transcript append-only.
+ *
  * Install: add this file's path to settings.json "extensions".
  * Sidecar: uv run sidecar/server.py  (see README.md)
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { defineTool, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { Type } from "typebox";
 import { readFileSync, appendFileSync, mkdirSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, basename, dirname } from "node:path";
@@ -28,6 +40,25 @@ const MAX_SKILL_CHARS = Number(process.env.LAYA_ROUTER_MAX_SKILL_CHARS ?? "8000"
 const FETCH_TIMEOUT_MS = Number(process.env.LAYA_ROUTER_TIMEOUT_MS ?? "3500");
 const BLOCK_BUDGET_MS = Number(process.env.LAYA_ROUTER_BLOCK_BUDGET_MS ?? "450");
 const USE_DESC = (process.env.LAYA_ROUTER_USE_DESC ?? "1") === "1";
+// Catalog hiding: shrink the built-in <skills> prompt section to the always-on
+// subset on EVERY turn (uniformly, so the section is byte-stable and the model
+// server's KV prefix cache over the conversation survives). Routed picks are
+// injected at the conversation tail instead — see README "Hiding the skill catalog".
+const CATALOG = (process.env.LAYA_ROUTER_CATALOG ?? "keep") as "keep" | "hide";
+const ALWAYS_ON = new Set(
+  (process.env.LAYA_ROUTER_ALWAYS_ON ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+);
+const SEARCH_TOOL = (process.env.LAYA_ROUTER_SEARCH_TOOL ?? "auto") as "auto" | "1" | "0";
+const searchToolEnabled = SEARCH_TOOL === "1" || (SEARCH_TOOL === "auto" && CATALOG === "hide");
+// Stable guideline text appended to the rules section in hide mode so the model
+// knows the small catalog is intentional. Constant per config → the rules
+// section stays byte-stable across turns.
+const ROUTER_NOTE = searchToolEnabled
+  ? "A skill router keeps this catalog small on purpose and pre-loads task-relevant skills into the conversation when they are needed. If the current task needs guidance that was not pre-loaded, call skill_search with a short description of the task."
+  : "A skill router keeps this catalog small on purpose and pre-loads task-relevant skills into the conversation when they are needed. If the current task seems to need guidance that was not pre-loaded, say so — the user can load any skill explicitly with /skill:name.";
 const LOG_DIR = join(homedir(), ".pi", "agent", "laya-router");
 const LOG_FILE = join(LOG_DIR, "log.jsonl");
 
@@ -176,6 +207,77 @@ export default function layaSkillRouter(pi: ExtensionAPI) {
     pendingRoute = { gen, state, skillsFp: skillsFp(skills), promise };
   };
 
+  // Escape hatch for router misses in hide mode: the model can still reach
+  // any skill mid-turn at zero static prompt cost (one small tool schema).
+  if (searchToolEnabled) {
+    pi.registerTool(
+      defineTool({
+        name: "skill_search",
+        label: "Skill search",
+        description:
+          "Search the full skill catalog by task description. The system prompt lists only a small always-on subset; a router pre-loads likely-relevant skills into the conversation. Use this when the current task needs guidance that was not pre-loaded. Returns the best matches with their SKILL.md paths — read a path with the read tool to load that skill's instructions.",
+        parameters: Type.Object({
+          query: Type.String({
+            description: "What the current task needs guidance for, in one or two sentences.",
+          }),
+        }),
+        async execute(_toolCallId, params, signal, _onUpdate, toolCtx) {
+          const catalog = lastSkills ?? scanSkillDirs(toolCtx?.cwd ?? homedir());
+          if (catalog.length === 0) {
+            return { content: [{ type: "text", text: "No skills are installed." }], details: { picks: [] } };
+          }
+          try {
+            const res = await fetch(ROUTE_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                state: params.query.slice(0, 1200),
+                skills: catalog.map((s) => ({ name: s.name, description: s.description })),
+                threshold: THRESHOLD,
+                top_k: Math.max(TOP_K, 5),
+                use_desc: USE_DESC,
+              }),
+              signal: signal
+                ? AbortSignal.any([signal, AbortSignal.timeout(FETCH_TIMEOUT_MS)])
+                : AbortSignal.timeout(FETCH_TIMEOUT_MS),
+            });
+            if (!res.ok) throw new Error(`sidecar ${res.status}`);
+            const r = (await res.json()) as RouteResponse;
+            const byName = new Map(catalog.map((s) => [s.name, s]));
+            const picks = r.picks ?? [];
+            if (picks.length === 0) {
+              return {
+                content: [{ type: "text", text: `No skills matched "${params.query}".` }],
+                details: { picks: [] },
+              };
+            }
+            const lines = picks.map((p, i) => {
+              const s = byName.get(p.name);
+              const desc = s?.description ? ` — ${s.description.slice(0, 200)}` : "";
+              const path = s && !s.path.startsWith("(unknown") ? `\n   read ${s.path} to load it` : "";
+              return `${i + 1}. ${p.name} (p=${p.p.toFixed(2)})${desc}${path}`;
+            });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Top skill matches for "${params.query}":\n${lines.join("\n")}\nRead the SKILL.md of any match with the read tool and follow it.`,
+                },
+              ],
+              details: { picks: picks.map((p) => p.name), latency_ms: r.latency_ms },
+            };
+          } catch (e) {
+            return {
+              content: [{ type: "text", text: `Skill search unavailable: ${String(e)}` }],
+              details: { error: String(e) },
+              isError: true,
+            };
+          }
+        },
+      }),
+    );
+  }
+
   pi.on("session_start", async (_event, ctx) => {
     injectedThisSession.clear();
     sessionEnabled = null;
@@ -188,7 +290,23 @@ export default function layaSkillRouter(pi: ExtensionAPI) {
       sessionEnabled = false;
     }
     if (!sessionEnabled) {
-      ctx.ui.setStatus("laya-router", "sidecar down (start: uv run sidecar/server.py)");
+      ctx.ui.setStatus(
+        "laya-router",
+        CATALOG === "hide"
+          ? "sidecar down AND catalog hidden — model has no skill guidance (start: uv run sidecar/server.py)"
+          : "sidecar down (start: uv run sidecar/server.py)",
+      );
+    } else if (CATALOG === "hide") {
+      ctx.ui.setStatus(
+        "laya-router",
+        `catalog hidden (${ALWAYS_ON.size} always-on kept, search tool ${searchToolEnabled ? "on" : "off"})`,
+      );
+      if (MODE !== "inject" && !searchToolEnabled) {
+        ctx.ui.notify(
+          "laya-router: LAYA_ROUTER_CATALOG=hide with mode=observe and no search tool means the model never sees skill guidance. Set LAYA_ROUTER_MODE=inject or LAYA_ROUTER_SEARCH_TOOL=1.",
+          "warning",
+        );
+      }
     }
   });
 
@@ -237,7 +355,7 @@ export default function layaSkillRouter(pi: ExtensionAPI) {
       if (totalChars + text.length > MAX_SKILL_CHARS * TOP_K) break;
       totalChars += text.length;
       loaded.push(p.name);
-      body += `\n## skill: ${p.name} (laya p=${p.p.toFixed(2)})\n\n${text}\n`;
+      body += `\n## skill: ${p.name} (laya p=${p.p.toFixed(2)})\nbundled files are relative to ${dirname(skill.path)}\n\n${text}\n`;
       injectedThisSession.add(p.name);
     }
 
@@ -305,15 +423,41 @@ export default function layaSkillRouter(pi: ExtensionAPI) {
   };
 
   pi.on("before_agent_start", async (event, ctx) => {
-    if (sessionEnabled === false) return;
     const prompt = event.prompt ?? "";
+
+    // Catalog hiding runs BEFORE any early return — including "/" and
+    // /skill: turns — so the <skills> section is filtered identically on
+    // every turn and never churns (a section that appears/disappears or
+    // changes content invalidates the conversation's cached KV prefix).
+    // `fullSkills` keeps the unfiltered catalog: routing scores everything
+    // even when the prompt only shows the always-on subset.
+    const opts = (
+      event as unknown as {
+        systemPromptOptions?: { skills?: Array<{ name: string }>; promptGuidelines?: string[] };
+      }
+    ).systemPromptOptions;
+    const fullSkills = opts?.skills;
+    if (CATALOG === "hide" && opts && Array.isArray(fullSkills)) {
+      opts.skills = fullSkills.filter((s) => ALWAYS_ON.has(s.name));
+      if (Array.isArray(opts.promptGuidelines) && !opts.promptGuidelines.includes(ROUTER_NOTE)) {
+        opts.promptGuidelines = [...opts.promptGuidelines, ROUTER_NOTE];
+      }
+      log({
+        event: "catalog_hidden",
+        prompt_head: prompt.slice(0, 100),
+        catalog_total: fullSkills.length,
+        catalog_kept: opts.skills.length,
+        always_on: [...ALWAYS_ON],
+      });
+    }
+
+    if (sessionEnabled === false) return;
     if (!prompt.trim() || prompt.trimStart().startsWith("/")) {
       lastPrompt = prompt || lastPrompt;
       return;
     }
 
-    const opts = (event as unknown as { systemPromptOptions?: { skills?: unknown } }).systemPromptOptions;
-    const { skills, source } = normalizeSkills(opts?.skills, ctx.cwd);
+    const { skills, source } = normalizeSkills(fullSkills, ctx.cwd);
     if (skills.length === 0) return;
     lastSkills = skills;
     activeCtx = ctx;
