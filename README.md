@@ -56,6 +56,9 @@ are `__HOME__`/`__UV__` templates; install.sh substitutes and loads them).
 | `LAYA_ROUTER_MAX_SKILL_CHARS` | `8000` | Per-skill body cap |
 | `LAYA_ROUTER_TIMEOUT_MS` | `3500` | Hard cap on the background route fetch (no longer turn-blocking) |
 | `LAYA_ROUTER_BLOCK_BUDGET_MS` | `450` | Max time `before_agent_start` waits for the route; past budget the turn starts immediately and the result steers mid-run (observe mode blocks 0 — the footer isn't worth blocking for) |
+| `LAYA_ROUTER_CATALOG` | `keep` | `hide` strips the built-in `<skills>` prompt section down to `LAYA_ROUTER_ALWAYS_ON` on every turn; see "Hiding the skill catalog" |
+| `LAYA_ROUTER_ALWAYS_ON` | _(empty)_ | Comma-separated skill names kept in the prompt catalog when `LAYA_ROUTER_CATALOG=hide` |
+| `LAYA_ROUTER_SEARCH_TOOL` | `auto` | Register the `skill_search` escape-hatch tool: `auto` = on when catalog is hidden, `1`/`0` force |
 | `LAYA_ROUTER_USE_DESC` | `1` | Include skill descriptions in the routing question (measured: recall@3 0.736 vs 0.679; ~3.6x slower stage-2) |
 | `LAYA_MODEL` | `convaiinnovations/laya` | Checkpoint |
 | `LAYA_PORT` | `7699` | Sidecar port |
@@ -77,6 +80,54 @@ behavior stalled up to 3.5s and then injected nothing). The sidecar adds an
 exact-match cache, batch-shape warmup, and a keep-alive pass. The full
 measured plan — including the two-stage shortlist and the dead ends that
 didn't survive measurement — is `docs/ROUTER_LATENCY_STRATEGY.md`.
+
+## Hiding the skill catalog (local-model / cold-prefill mode)
+
+pi's default prompt attaches the full name+description catalog of every
+installed skill to every request. On this machine that is 86 skills ≈
+32k chars ≈ **~8.5k tokens on every single request** — a large share of cold
+prefill on a local model server (GB10-class boxes), and pure overhead for warm
+turns.
+
+`LAYA_ROUTER_CATALOG=hide` moves the catalog out of the system prompt:
+
+- The `<skills>` section shrinks to `LAYA_ROUTER_ALWAYS_ON` (a comma-separated
+  keep-list; empty = section removed entirely) and is filtered identically on
+  **every** turn, so the section is byte-stable across the session.
+- Routed skills still arrive: inject mode appends the winners' full bodies (now
+  with their `location`, so bundled relative paths resolve) as a message at the
+  conversation tail — unchanged behavior.
+- A `skill_search` tool (on by default in hide mode) lets the model pull a
+  skill the router missed mid-turn, for the cost of one small tool schema.
+- `/skill:name` invocations are untouched: command expansion reads from disk,
+  not from the prompt catalog.
+- Every hide decision is logged (`catalog_hidden` events in `log.jsonl`) with
+  total/kept counts, so the token saving is auditable per turn.
+
+**Why not put the per-turn picks into the system prompt section instead?**
+Because the system prompt sits at position 0 of the request: changing its
+content per turn invalidates the model server's KV prefix cache for the entire
+conversation and turns every warm prefill cold — strictly worse than the
+static catalog it replaces. The stable-section + tail-injection split keeps
+the transcript append-only, so vLLM/SGLang/llama.cpp prefix caches keep
+working while cold prefill shrinks by the full catalog size.
+
+Recommended config for GB10 sessions:
+
+```bash
+export LAYA_ROUTER_MODE=inject
+export LAYA_ROUTER_CATALOG=hide
+export LAYA_ROUTER_ALWAYS_ON=email,epistemic-resourcefulness   # your call
+```
+
+Trade-off to know: with the catalog hidden, a router miss means the model
+cannot see that skill at all (recall@3 ≈ 0.74 through the harness). The
+always-on list covers load-bearing skills; `skill_search` covers the rest
+lazily. And if the sidecar is down while the catalog is hidden, the model has
+no skill guidance — the status line says so loudly.
+
+Note: a session resumed from before the switch replays its old full-catalog
+system message once (one cache invalidation), then hide mode is stable again.
 
 ## Behavior details
 
