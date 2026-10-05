@@ -1,0 +1,22 @@
+README.md
+  s_fd261527b7120d::t_c343f16a14a711 59-61,84-130
+  s_fd261527b7120d::t_fd2342f20c66b2 131
+extension/index.ts
+  s_fd261527b7120d::t_019acc03b54060 10-20,25-26,43-61,210-280,293-309,358,427-454,460
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9a78fddf7cb0eff8602281546fd0c8a1033cf3d4",
+  "prompts": {},
+  "sessions": {
+    "s_fd261527b7120d": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a10bc6-d7bd-7375-94ea-baf824c7d5d8",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
