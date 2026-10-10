@@ -308,6 +308,7 @@ def run_nightly(cfg: LoopConfig, log=None) -> int:
                                cwd=data_root(), capture_output=True)
             except Exception as exc:
                 log(f"record/commit failed (non-fatal): {exc}")
+            _prune(cfg.keep_checkpoints, log)
         else:
             log(f"run ended: status={status} after {minutes:.0f} min (no eval pair to record)")
 

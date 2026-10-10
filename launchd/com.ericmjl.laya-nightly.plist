@@ -6,10 +6,16 @@
     <string>com.ericmjl.laya-nightly</string>
     <key>ProgramArguments</key>
     <array>
+        <string>/usr/bin/caffeinate</string>
+        <string>-i</string>
+        <string>-t</string>
+        <string>15600</string>
         <string>__UV__</string>
         <string>run</string>
         <string>python</string>
         <string>finetune/nightly_loop.py</string>
+        <string>--time-budget-min</string>
+        <string>240</string>
     </array>
     <key>WorkingDirectory</key>
     <string>__HOME__/github/pi-laya-skill-router</string>
@@ -31,7 +37,7 @@
         <key>PYTHONUNBUFFERED</key>
         <string>1</string>
         <key>PATH</key>
-        <string>__CLAUDE_BIN__:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+        <string>__HOME__/.local/bin:__CLAUDE_BIN__:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
     </dict>
 </dict>
 </plist>
