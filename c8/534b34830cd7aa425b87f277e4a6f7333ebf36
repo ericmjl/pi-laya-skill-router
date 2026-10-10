@@ -1,0 +1,21 @@
+launchd/com.ericmjl.laya-nightly.plist
+  s_5f3709c92b0d6b::t_52a29cb88599a9 9-12,17-18,40
+finetune/nightly_loop.py
+  s_5f3709c92b0d6b::t_28615fb783ab53 311
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c8534b34830cd7aa425b87f277e4a6f7333ebf36",
+  "prompts": {},
+  "sessions": {
+    "s_5f3709c92b0d6b": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0e780-4939-73c8-afd4-d7d513f3ebe6",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Eric Ma <ericmajinglong@gmail.com>"
+    }
+  }
+}
